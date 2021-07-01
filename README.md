@@ -17,4 +17,7 @@ Free-text anonymization prototype and efficiency evaluation of different models
 
 4. Download a spanish base model
 
-        python -m spacy download es_core_news_lg
+        python -m spacy download es_core_news_sm
+
+5. Open a console and run 
+        python main.py
