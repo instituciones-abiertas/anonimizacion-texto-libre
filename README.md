@@ -19,5 +19,10 @@ Free-text anonymization prototype and efficiency evaluation of different models
 
         python -m spacy download es_core_news_sm
 
-5. Open a console and run 
-        python main.py
+5. Using it!
+
+        1. Open a console and run this command to see the options menu
+                python main.py
+
+        2 Open a console and run the command 
+                `python [function you want to use] [parameters for that function]`
