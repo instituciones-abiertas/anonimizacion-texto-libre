@@ -13,9 +13,13 @@ def replace_tokens_with_labels(doc):
 	text = doc.text
 	ents = doc.ents
 	result = ""
+	#TODO reemplazar tokens del final hacia el principio (para que no me cambie los indices)
+	#ver reemplazo_asincronico_en_texto() en entity/tasks.py
 	return result
 
 
-def get_comparison_result(doc_origin_path, json_origin_path):
+def get_comparison_result(nlp, doc_text, annotations):
+	doc = nlp(doc_text)
+	ents = doc.ents
 	# ver lo que está  hecho en https://recursos.camba.coop/llave-en-mano/ia2/ia2-server/blob/develop/apps/entity/management/commands/stats.py
 	return []

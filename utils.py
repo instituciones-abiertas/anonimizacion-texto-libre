@@ -47,18 +47,16 @@ def generate_csv_file(result, destination_folder, logger):
 	header = [
 			"Entidad",
 			"Modelo",
-			"Error",
-			"Manual",
+			"Esperado",
 			"Efectividad",
 	]
 	rows = []
 	for item in result:
 		rows.append(
 			{
-					"entidad": item.entity,
+					"entity": item.entity,
 					"model": item.model,
-					"error": item.error,
-					"manual": item.manual,
+					"expected": item.expected,
 					"efficiency": item.efficiency,
 			}
 		)
