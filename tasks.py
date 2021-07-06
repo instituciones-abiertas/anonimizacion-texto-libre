@@ -6,6 +6,7 @@ from model_utils import Nlp, replace_tokens_with_labels, get_comparison_result
 
 logger = create_logger()
 DEFAULT_FILE_NAME = "texto.txt"
+MODEL_NAME = "es_core_news_lg"
 
 
 def anonymize_doc(text=None, save_file=False, origin_path=None, file_name=False, column_to_use=None, destination_folder=None):
@@ -29,7 +30,8 @@ def anonymize_doc(text=None, save_file=False, origin_path=None, file_name=False,
 
 	if can_execute:
 		start = time()
-		
+		anonymization_output = f"guardará en la carpeta: {args.destination_folder}" if args.destination_folder else f"mostrará en la consola"
+
 		if args.text:
 			to_anonymize_label = "texto"
 			to_anonymize = args.text
@@ -38,12 +40,12 @@ def anonymize_doc(text=None, save_file=False, origin_path=None, file_name=False,
 			to_anonymize = args.file_name
 
 		logger.info(f"""Anonimizando el {to_anonymize_label}: {to_anonymize}. 
-			\nEl resultado de la anonimización se guardará en la carpeta: {args.destination_folder}.""")
+			\nEl resultado de la anonimización se {anonymization_output}.""")
 
-		#FIXME me quedo con el primer valor del archivo, vamos a permitir multiples filas?
+		#TODO me quedo con el primer valor del archivo, vamos a anonimizar multiples filas en issue #8
 		doc_text = args.text if args.text else get_text_from_file(args.origin_path, args.file_name, args.column_to_use)[0]
 
-		nlp = Nlp("es_core_news_sm")
+		nlp = Nlp(MODEL_NAME)
 		doc = nlp.generate_doc(doc_text)
 		anonymized_doc = replace_tokens_with_labels(doc)
 
