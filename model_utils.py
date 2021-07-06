@@ -1,6 +1,7 @@
-import spacy
+import spacy, re
 from spacy.tokens import Span
 from spacy.language import Language
+from utils import bcolors
 
 class Nlp:
 	def __init__(self, model_name):
@@ -39,16 +40,32 @@ def check_misc_and_org(doc):
 	return doc
 
 
-def replace_tokens_with_labels(doc):
+def replace_tokens_with_labels(doc, color_entities):
 	anonymized_text = doc.text
 	ents = list(doc.ents)
 
 	for ent in ents:
 		print(f"se va a reemplazar ent.text: {ent.text} - {ent.label_}")
 		#we replace every ocurrencie no matter it position
-		anonymized_text = anonymized_text.replace(ent.text, f"<{ent.label_}>")
+		entity_label = f"<{ent.label_}>"
+		if color_entities:
+			entity_label = bcolors.WARNING+entity_label+bcolors.ENDC
+		anonymized_text = anonymized_text.replace(ent.text, f"{entity_label}")
 
 	return anonymized_text
+
+
+def find_ent_ocurrencies_in_upper_text(text, ents):
+	found_texts = []
+	upper_pattern= ['[A-ZÀ-ÿ][A-ZÀ-ÿ]+']
+	for pattern in upper_pattern:
+		match = re.findall(pattern, text)
+		ex_cap_text = ' '.join(x.lower() for x in match)
+		filtered_ents = list(filter(lambda ent: ent.text.lower() in ex_cap_text, ents))
+		for ent in filtered_ents:
+			print(f"text: {ent.text} - label: {ent.label_}")
+			found_texts.append({"text": ent.text, "entity_name": ent.label_})
+	return found_texts
 
 
 def get_comparison_result(nlp, doc_text, annotations):

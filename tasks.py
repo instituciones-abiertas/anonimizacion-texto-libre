@@ -2,7 +2,7 @@ import os, sys
 import argparse
 from time import time
 from utils import bcolors, create_logger, check_dir, generate_csv_file, save_txt_file, are_parameters_ok_to_anonymize, get_text_from_file
-from model_utils import Nlp, replace_tokens_with_labels, get_comparison_result
+from model_utils import Nlp, replace_tokens_with_labels, get_comparison_result, find_ent_ocurrencies_in_upper_text
 
 logger = create_logger()
 DEFAULT_FILE_NAME = "texto.txt"
@@ -47,12 +47,18 @@ def anonymize_doc(text=None, save_file=False, origin_path=None, file_name=False,
 
 		nlp = Nlp(MODEL_NAME)
 		doc = nlp.generate_doc(doc_text)
-		anonymized_doc = replace_tokens_with_labels(doc)
+
+		#TODO se debería analizar si las mayúsculas deberían ser incorporadas en base al texto de las historias clínicas, agregar parámetro?
+		print("\nqué entidades se encontraron en el texto en mayúsculas?")
+		found_texts = find_ent_ocurrencies_in_upper_text(doc.text, doc.ents)
+		print("\n")
+
+		anonymized_doc = replace_tokens_with_labels(doc, not args.save_file)
 
 		if args.save_file:
 			save_txt_file(args.file_name or DEFAULT_FILE_NAME, anonymized_doc, args.destination_folder)
 		else:
-			print(f"Texto anonimizado: \n{anonymized_doc}")
+			print(f"\n"+bcolors.OKGREEN+"Texto anonimizado:"+bcolors.ENDC+f" \n{anonymized_doc}")
 
 		logger.info(f"Anonimización finalizada en {time() - start} segundos.")
 	else:
