@@ -15,7 +15,7 @@ def replace_tokens_with_labels(doc):
 	result = ""
 	#TODO reemplazar tokens del final hacia el principio (para que no me cambie los indices)
 	#ver reemplazo_asincronico_en_texto() en entity/tasks.py
-	return result
+	return text
 
 
 def get_comparison_result(nlp, doc_text, annotations):
