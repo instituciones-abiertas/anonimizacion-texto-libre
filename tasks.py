@@ -1,44 +1,68 @@
 import os, sys
+import argparse
 from time import time
-from utils import create_logger, check_dir, generate_csv_file, save_doc_file
-from model_utils import Nlp, replace_tokens_with_labels, get_comparison_result
-from spacy.lang.es.examples import sentences  #FIXME eliminar cuando no se use mas
-import random #FIXME eliminar cuando no se use mas
+from utils import bcolors, create_logger, check_dir, generate_csv_file, save_txt_file, are_parameters_ok_to_anonymize, get_text_from_file
+from model_utils import Nlp, replace_tokens_with_labels, get_comparison_result, find_ent_ocurrencies_in_upper_text
 
 logger = create_logger()
+DEFAULT_FILE_NAME = "texto.txt"
+MODEL_NAME = "es_core_news_lg"
 
-def anonymize_doc(origin_path=None, destination_folder=None):
+
+def anonymize_doc(text=None, save_file=False, origin_path=None, file_name=False, column_to_use=None, destination_folder=None):
 	"""
 	:param origin_path: Path to the file to be anonymized.
 	:param destination_folder: Path where the anonymized file is going to be saved.
 	:return: Notification when the process is finished.
 	"""
-	can_execute = True
-	if not origin_path or not os.path.isfile(origin_path):
-		can_execute = False
-		print(f"No has definido la ubicación del archivo a anonimizar o el archivo no existe.\nAsegúrate de ingresar el path completo.")
 
-	if not destination_folder or not os.path.isdir(destination_folder):
-		can_execute = False
-		print("No has definido la ubicación de destino para el documento anonimizado o la carpeta destino no existe.\nAsegúrate de ingresar el path completo.")
+	parser = argparse.ArgumentParser()
+	parser.add_argument("function", help="To anonymize you should call anonymize_doc", type=str)
+	parser.add_argument("--text", help="The text to be anonymized", type=str)
+	parser.add_argument("--save_file", help="Would you like to save a file or show results in the console?", action="store_true")
+	parser.add_argument("--origin_path", help="Path to the file to be anonymized", type=str)
+	parser.add_argument("--file_name", help="The filename from the file to be anonymized", type=str)
+	parser.add_argument("--column_to_use", help="Column to use from the file (only one), indicate it name", type=str)
+	parser.add_argument("--destination_folder", help="Path where the anonymized file is going to be saved", type=str)
+	args = parser.parse_args()
+
+	can_execute = are_parameters_ok_to_anonymize(args)
 
 	if can_execute:
 		start = time()
-		logger.info(f"""Anonimizando el documento: {origin_path}. 
-		\nEl documento anonimizado se guardará en la carpeta: {destination_folder}. 
-		\nEl archivo anonimizado tendrá el mismo nombre que el archivo original al cual se le agregará '_anonimizado' al final.""")
+		anonymization_output = f"guardará en la carpeta: {args.destination_folder}" if args.destination_folder else f"mostrará en la consola"
 
-		#TODO deben definir cómo será el input
-		doc_text = sentences[random.randint(0,len(sentences)-1)] #texto de ejemplo
-		nlp = Nlp("es_core_news_sm")
+		if args.text:
+			to_anonymize_label = "texto"
+			to_anonymize = args.text
+		else:
+			to_anonymize_label = "archivo"
+			to_anonymize = args.file_name
+
+		logger.info(f"""Anonimizando el {to_anonymize_label}: {to_anonymize}. 
+			\nEl resultado de la anonimización se {anonymization_output}.""")
+
+		#TODO me quedo con el primer valor del archivo, vamos a anonimizar multiples filas en issue #8
+		doc_text = args.text if args.text else get_text_from_file(args.origin_path, args.file_name, args.column_to_use)[0]
+
+		nlp = Nlp(MODEL_NAME)
 		doc = nlp.generate_doc(doc_text)
 
-		anonymized_doc = replace_tokens_with_labels(doc)
-		save_doc_file(origin_path, anonymized_doc, destination_folder)
+		#TODO se debería analizar si las mayúsculas deberían ser incorporadas en base al texto de las historias clínicas, agregar parámetro?
+		print("\nqué entidades se encontraron en el texto en mayúsculas?")
+		found_texts = find_ent_ocurrencies_in_upper_text(doc.text, doc.ents)
+		print("\n")
+
+		anonymized_doc = replace_tokens_with_labels(doc, not args.save_file)
+
+		if args.save_file:
+			save_txt_file(args.file_name or DEFAULT_FILE_NAME, anonymized_doc, args.destination_folder)
+		else:
+			print(f"\n"+bcolors.OKGREEN+"Texto anonimizado:"+bcolors.ENDC+f" \n{anonymized_doc}")
+
 		logger.info(f"Anonimización finalizada en {time() - start} segundos.")
 	else:
-		dir_path = os.path.dirname(os.path.realpath(__file__))
-		print(f"Si el archivo o la carpeta destino está en la misma ubicación que este script, el path debería comenzar con: {dir_path+'/'}")
+		print(f"Revise los parámetros enviados para poder anonimizar. Para más información consulte la ayuda: "+bcolors.WARNING +"'python tasks.py anonymize_doc --help'"+bcolors.ENDC +".")
 
 
 def evaluate_efficiency(doc_origin_path=None, json_origin_path=None, destination_folder=None):
@@ -65,10 +89,14 @@ def evaluate_efficiency(doc_origin_path=None, json_origin_path=None, destination
 		start = time()
 		logger.info(f"""Analizando el documento: {doc_origin_path} junto al archivo de anotaciones: {json_origin_path}. 
 			\nEl resultado del análisis se guardará en la carpeta: {destination_folder}.""")
-		result = get_comparison_result(doc_origin_path, json_origin_path)
+
+		annotations =""
+		nlp = Nlp("es_core_news_sm") 
+		doc_text = "texto de ejemplo"
+		result = get_comparison_result(nlp, doc_text, annotations)
 		generate_csv_file(result, destination_folder, logger)
-		logger.info(f"Análisis finalizado en {time() - start}.")
-		print("Proceso terminado")
+		logger.info(f"Análisis finalizado en {time() - start} segundos.")
+		print("Proceso terminado en {time() - start} segundos.")
 	else:
 		dir_path = os.path.dirname(os.path.realpath(__file__))
 		print(f"Si el archivo o la carpeta destino está en la misma ubicación que este script, el path debería comenzar con: {dir_path+'/'}")

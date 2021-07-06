@@ -1,8 +1,21 @@
 import os, sys
 import csv
 import logging
+from collections import defaultdict
+
 
 logger = logging.getLogger("CIECTI logger")
+
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
 
 #check if dir exist if not create it
 def check_dir(file_name):
@@ -24,11 +37,47 @@ def create_logger():
 	return logger
 
 
-def save_doc_file(origin_path, doc, destination_folder):
-	#TODO deben definir el output que necesitan
-	name, extension = origin_path.split("/")[-1:][0].split(".")
-	file_name = name+"_anonymized."+extension
-	with open(file_name, 'w') as file:
+def are_parameters_ok_to_anonymize(args):
+	if not args.file_name and not args.text:
+		print("Debes elegir al menos una opción de anonimización: archivo o texto.")
+		return False
+
+	if args.file_name and args.text:
+		print("Debes elegir una sola opción de anonimización: archivo "+bcolors.WARNING +"(parámetro '--file_name')"+bcolors.ENDC +" o texto "+bcolors.WARNING +"(parámetro '--text')"+bcolors.ENDC +" .")
+		return False
+
+	if args.save_file:
+		if not args.destination_folder or not os.path.isdir(args.destination_folder):
+			print("No has definido la ubicación de destino "+bcolors.WARNING +"(falta el parámetro '--destination_folder')"+bcolors.ENDC +" para el documento anonimizado o la carpeta destino no existe.")
+			return False
+
+	if args.file_name:
+		if not args.origin_path or not os.path.isdir(args.origin_path):
+			print(f"No has definido la ubicación del archivo a anonimizar "+bcolors.WARNING +"(falta el parámetro '--origin_path')"+bcolors.ENDC +" o la carpeta origen no existe.")
+			return False
+
+		if not args.column_to_use:
+			print("No has definido la columna a anonimizar del archivo "+bcolors.WARNING +"(falta el parámetro '--column_to_use')"+bcolors.ENDC +".")
+			return False
+
+	return True
+
+def get_text_from_file(origin_path, file_name, column_to_use):
+	file_path = origin_path+file_name
+	with open(file_path, 'r') as file:
+		columns = []
+		reader = csv.DictReader(file)
+		for row in reader:
+			only_included_cols = dict(filter(lambda elem: elem[0] == column_to_use, row.items()))
+			for (k,v) in only_included_cols.items():
+				columns.append(v)
+		return columns
+
+def save_txt_file(filename, doc, destination_folder):
+	name, extension = filename.split(".")
+	#TODO si anonimizamos varias filas de un csv deberíamos conservar la extension
+	file_name = name+"_anonimizado.txt"#+extension
+	with open(destination_folder+"/"+file_name, 'w') as file:
 		file.write(doc)
 		logger.info(f"Se guardó el archivo {file_name} en la carpeta {destination_folder}")
 
@@ -47,18 +96,16 @@ def generate_csv_file(result, destination_folder, logger):
 	header = [
 			"Entidad",
 			"Modelo",
-			"Error",
-			"Manual",
+			"Esperado",
 			"Efectividad",
 	]
 	rows = []
 	for item in result:
 		rows.append(
 			{
-					"entidad": item.entity,
+					"entity": item.entity,
 					"model": item.model,
-					"error": item.error,
-					"manual": item.manual,
+					"expected": item.expected,
 					"efficiency": item.efficiency,
 			}
 		)
