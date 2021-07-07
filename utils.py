@@ -62,16 +62,27 @@ def are_parameters_ok_to_anonymize(args):
 
 	return True
 
+
 def get_text_from_file(origin_path, file_name, column_to_use):
+	"""
+	:param origin_path: Path to the file to be used.
+	:param file_name: Name of the file that contains the needed text.
+	:param column_to_use: Column that contains the text to be used, it can be column name or column index.
+	:return: Text obtained from the column from the file.
+	"""
 	file_path = origin_path+file_name
 	with open(file_path, 'r') as file:
 		columns = []
 		reader = csv.DictReader(file)
 		for row in reader:
-			only_included_cols = dict(filter(lambda elem: elem[0] == column_to_use, row.items()))
+			if type(column_to_use) == str:
+				only_included_cols = dict(filter(lambda elem: elem[0] == column_to_use, row.items()))
+			else:
+				only_included_cols = dict(filter(lambda elem: elem[column_to_use], row.items()))
 			for (k,v) in only_included_cols.items():
 				columns.append(v)
 		return columns
+
 
 def save_txt_file(filename, doc, destination_folder):
 	name, extension = filename.split(".")

@@ -27,7 +27,8 @@ def show_menu():
 		except:
 			print("Debe ingresar una de las opciones listadas.")
 			print_menu()
-
+		
+		#TODO actualizar menú en base a parámetros que se agregaron
 		if int(user_input) == 1:
 			origin_path = input("Ingrese el path completo (nombre del archivo incluido) del documento a anonimizar y presione la tecla enter: \n")
 			destination_folder = input("Ingrese el path completo de la carpeta donde el documento anonimizado será guardado y presione la tecla enter: \n")

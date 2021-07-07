@@ -1,13 +1,20 @@
 import spacy, re
+from utils import bcolors
 from spacy.tokens import Span
 from spacy.language import Language
-from utils import bcolors
+from pipeline_components.entity_ruler import ruler_patterns
 
 class Nlp:
 	def __init__(self, model_name):
 		self.nlp = spacy.load(model_name)
 		self.doc = None
+
 		self.nlp.add_pipe("check_misc_and_org", after= "ner")
+
+		ruler = self.nlp.add_pipe("entity_ruler", config={"overwrite_ents": True})
+		ruler.add_patterns(ruler_patterns)
+
+		#TODO agregar entityCustom para post-procesamiento
 
 	def generate_doc(self, text):
 		return self.nlp(text)
@@ -20,6 +27,7 @@ def get_best_match_for_misc_or_org(ent_to_find_match, all_ents):
 		print(f"match found for: {ent_to_find_match.text} - results: {results}")
 		return results[0]
 	return []
+
 
 @Language.component("check_misc_and_org")
 def check_misc_and_org(doc):
@@ -43,7 +51,7 @@ def check_misc_and_org(doc):
 def replace_tokens_with_labels(doc, color_entities):
 	anonymized_text = doc.text
 	ents = list(doc.ents)
-
+	#FIXME sólo quedarse con las entidades que se quieren identificar
 	for ent in ents:
 		print(f"se va a reemplazar ent.text: {ent.text} - {ent.label_}")
 		#we replace every ocurrencie no matter it position
