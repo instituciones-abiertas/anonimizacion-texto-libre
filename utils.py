@@ -56,7 +56,7 @@ def are_parameters_ok_to_anonymize(args):
 			print(f"No has definido la ubicación del archivo a anonimizar "+bcolors.WARNING +"(falta el parámetro '--origin_path')"+bcolors.ENDC +" o la carpeta origen no existe.")
 			return False
 
-		if not args.column_to_use:
+		if args.column_to_use == None:
 			print("No has definido la columna a anonimizar del archivo "+bcolors.WARNING +"(falta el parámetro '--column_to_use')"+bcolors.ENDC +".")
 			return False
 
@@ -67,7 +67,7 @@ def get_text_from_file(origin_path, file_name, column_to_use):
 	"""
 	:param origin_path: Path to the file to be used.
 	:param file_name: Name of the file that contains the needed text.
-	:param column_to_use: Column that contains the text to be used, it can be column name or column index.
+	:param column_to_use: Column that contains the text to be used, indicate the column index (consider that the first index is zero).
 	:return: Text obtained from the column from the file.
 	"""
 	file_path = origin_path+file_name
@@ -84,12 +84,16 @@ def get_text_from_file(origin_path, file_name, column_to_use):
 		return columns
 
 
-def save_txt_file(filename, doc, destination_folder):
-	name, extension = filename.split(".")
-	#TODO si anonimizamos varias filas de un csv deberíamos conservar la extension
-	file_name = name+"_anonimizado.txt"#+extension
+def save_csv_file(filename, doc, destination_folder):
+	name, _ = filename.split(".")
+	file_name = name+"_anonimizado.csv"
+
 	with open(destination_folder+"/"+file_name, 'w') as file:
-		file.write(doc)
+		writer = csv.DictWriter(file, fieldnames=["texto_anonimizado"])
+		writer.writeheader()
+		for text in doc:
+			writer.writerow({"texto_anonimizado":text})
+
 		logger.info(f"Se guardó el archivo {file_name} en la carpeta {destination_folder}")
 
 

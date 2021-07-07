@@ -1,6 +1,6 @@
 from utils import get_text_from_file
 
-lista_de_enfermedades = get_text_from_file("./data/", "epof.csv", "enfermedad")
+lista_de_enfermedades = get_text_from_file("./data/", "epof.csv", 0)
 matriculas = get_text_from_file("./data/", "matriculas.csv", 0)
 
 dni = [
