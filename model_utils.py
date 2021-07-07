@@ -1,25 +1,41 @@
 import spacy, re
+from utils import bcolors
 from spacy.tokens import Span
 from spacy.language import Language
-from utils import bcolors
+from pipeline_components.entity_ruler import ruler_patterns
+from time import time
 
 class Nlp:
 	def __init__(self, model_name):
 		self.nlp = spacy.load(model_name)
 		self.doc = None
+
 		self.nlp.add_pipe("check_misc_and_org", after= "ner")
+
+		ruler = self.nlp.add_pipe("entity_ruler", config={"overwrite_ents": True})
+		ruler.add_patterns(ruler_patterns)
+
+		#TODO agregar entityCustom para post-procesamiento
 
 	def generate_doc(self, text):
 		return self.nlp(text)
 
 def get_best_match_for_misc_or_org(ent_to_find_match, all_ents):
 	# print(f"\n buscando match de: {ent_to_find_match}")
-	#FIXME se puede optimizar de alguna manera? filter?
+	#FIXME ver cuál es más óptimo
+	start = time()
+	results_2 = list(filter(lambda ent: ent_to_find_match.text in ent.text, all_ents))
+	print(f"results_2 en {time() - start} segundos. len(results_2):{len(results_2)}")
+	
+	start = time()
 	results = [ent for ent in all_ents if ent_to_find_match.text in ent.text]
+	print(f"results en {time() - start} segundos. len(results):{len(results)}")
+
 	if len(results):
 		print(f"match found for: {ent_to_find_match.text} - results: {results}")
 		return results[0]
 	return []
+
 
 @Language.component("check_misc_and_org")
 def check_misc_and_org(doc):
@@ -43,7 +59,7 @@ def check_misc_and_org(doc):
 def replace_tokens_with_labels(doc, color_entities):
 	anonymized_text = doc.text
 	ents = list(doc.ents)
-
+	#FIXME sólo quedarse con las entidades que se quieren identificar
 	for ent in ents:
 		print(f"se va a reemplazar ent.text: {ent.text} - {ent.label_}")
 		#we replace every ocurrencie no matter it position
@@ -66,6 +82,18 @@ def find_ent_ocurrencies_in_upper_text(text, ents):
 			print(f"text: {ent.text} - label: {ent.label_}")
 			found_texts.append({"text": ent.text, "entity_name": ent.label_})
 	return found_texts
+
+
+def anonymize_text(nlp, text, color_entities):
+	doc = nlp.generate_doc(text)
+
+	print("\nqué entidades se encontraron en el texto en mayúsculas?")
+	found_texts = find_ent_ocurrencies_in_upper_text(doc.text, doc.ents)
+	print("\n")
+
+	anonymized_text = replace_tokens_with_labels(doc, color_entities)
+	return anonymized_text
+
 
 
 def get_comparison_result(nlp, doc_text, annotations):

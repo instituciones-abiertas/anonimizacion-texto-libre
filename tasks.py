@@ -1,13 +1,12 @@
 import os, sys
 import argparse
 from time import time
-from utils import bcolors, create_logger, check_dir, generate_csv_file, save_txt_file, are_parameters_ok_to_anonymize, get_text_from_file
-from model_utils import Nlp, replace_tokens_with_labels, get_comparison_result, find_ent_ocurrencies_in_upper_text
+from utils import bcolors, create_logger, check_dir, generate_csv_file, save_csv_file, are_parameters_ok_to_anonymize, get_text_from_file
+from model_utils import Nlp, get_comparison_result, anonymize_text
 
 logger = create_logger()
 DEFAULT_FILE_NAME = "texto.txt"
 MODEL_NAME = "es_core_news_lg"
-
 
 def anonymize_doc(text=None, save_file=False, origin_path=None, file_name=False, column_to_use=None, destination_folder=None):
 	"""
@@ -22,7 +21,7 @@ def anonymize_doc(text=None, save_file=False, origin_path=None, file_name=False,
 	parser.add_argument("--save_file", help="Would you like to save a file or show results in the console?", action="store_true")
 	parser.add_argument("--origin_path", help="Path to the file to be anonymized", type=str)
 	parser.add_argument("--file_name", help="The filename from the file to be anonymized", type=str)
-	parser.add_argument("--column_to_use", help="Column to use from the file (only one), indicate it name", type=str)
+	parser.add_argument("--column_to_use", help="Column to use from the file (only one), indicate it position (consider that the first index is zero)", type=int)
 	parser.add_argument("--destination_folder", help="Path where the anonymized file is going to be saved", type=str)
 	args = parser.parse_args()
 
@@ -42,23 +41,25 @@ def anonymize_doc(text=None, save_file=False, origin_path=None, file_name=False,
 		logger.info(f"""Anonimizando el {to_anonymize_label}: {to_anonymize}. 
 			\nEl resultado de la anonimización se {anonymization_output}.""")
 
-		#TODO me quedo con el primer valor del archivo, vamos a anonimizar multiples filas en issue #8
-		doc_text = args.text if args.text else get_text_from_file(args.origin_path, args.file_name, args.column_to_use)[0]
-
 		nlp = Nlp(MODEL_NAME)
-		doc = nlp.generate_doc(doc_text)
 
-		#TODO se debería analizar si las mayúsculas deberían ser incorporadas en base al texto de las historias clínicas, agregar parámetro?
-		print("\nqué entidades se encontraron en el texto en mayúsculas?")
-		found_texts = find_ent_ocurrencies_in_upper_text(doc.text, doc.ents)
-		print("\n")
-
-		anonymized_doc = replace_tokens_with_labels(doc, not args.save_file)
+		if args.text:
+			anonymized_docs = anonymize_text(nlp, args.text, not args.save_file)
+		else:
+			doc_text = get_text_from_file(args.origin_path, args.file_name, args.column_to_use)
+			anonymized_docs = []
+			for text in doc_text:
+				anonymized_text = anonymize_text(nlp, text, not args.save_file)
+				anonymized_docs.append(anonymized_text)
 
 		if args.save_file:
-			save_txt_file(args.file_name or DEFAULT_FILE_NAME, anonymized_doc, args.destination_folder)
+			save_csv_file(args.file_name or DEFAULT_FILE_NAME, anonymized_docs, args.destination_folder)
+		elif type(anonymized_docs) == list:
+			import pdb; pdb.set_trace()
+			print("\n"+bcolors.WARNING+"El texto anonimizado tiene varias filas, recomendamos guardarlo como archivo."+bcolors.ENDC)
+			print(f"\n"+bcolors.OKGREEN+"Texto anonimizado:"+bcolors.ENDC+f" \n{anonymized_docs}")
 		else:
-			print(f"\n"+bcolors.OKGREEN+"Texto anonimizado:"+bcolors.ENDC+f" \n{anonymized_doc}")
+			print(f"\n"+bcolors.OKGREEN+"Texto anonimizado:"+bcolors.ENDC+f" \n{anonymized_docs}")
 
 		logger.info(f"Anonimización finalizada en {time() - start} segundos.")
 	else:
