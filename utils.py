@@ -115,15 +115,32 @@ def get_text_from_file(origin_path, file_name, column_to_use):
         return columns
 
 
-def save_csv_file(filename, doc, destination_folder):
+def save_csv_file(origin_path, filename, doc, destination_folder):
+    """
+    We copy the original csv file content and we add the anonymized texts in a new column added to the end.
+    :param origin_path: Path to the file that has been anonymized.
+    :param filename: name of the file that has been anonymized.
+    :param doc: doc text anonymized.
+    :param destination_folder: Path where the csv file is going to be saved.
+    """
     name, _ = filename.split(".")
     file_name = name + "_anonimizado.csv"
 
-    with open(destination_folder + "/" + file_name, "w") as file:
-        writer = csv.DictWriter(file, fieldnames=["texto_anonimizado"])
-        writer.writeheader()
-        for text in doc:
-            writer.writerow({"texto_anonimizado": text})
+    with open(origin_path + "/" + filename,'r') as csvinput:
+        with open(destination_folder + "/" + file_name, 'w') as csvoutput:
+            writer = csv.writer(csvoutput, lineterminator='\n')
+            reader = csv.reader(csvinput)
+
+            all = []
+            row = next(reader)
+            row.append('texto_anonimizado')
+            all.append(row)
+
+            for idx, row in enumerate(reader):
+                row.append(doc[idx])
+                all.append(row)
+
+            writer.writerows(all)
 
         logger.info(f"Se guardó el archivo {file_name} en la carpeta {destination_folder}")
 
