@@ -21,6 +21,7 @@ packaging==20.9
 pathy==0.6.0
 pdfminer.six==20181108
 Pillow==8.2.0
+pre-commit==2.13.0
 preshed==3.0.5
 pycryptodome==3.10.1
 pydantic==1.7.4

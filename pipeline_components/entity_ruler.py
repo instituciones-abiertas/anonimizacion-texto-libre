@@ -20,8 +20,14 @@ ruler_patterns = [
     {"label": "CORREO_ELECTRÓNICO", "pattern": [{"LIKE_EMAIL": True}]},
     {"label": "NUM_CUIT_CUIL", "pattern": [{"TEXT": {"REGEX": "^(20|23|27|30|33)([0-9]{9}|-[0-9]{8}-[0-9]{1})$"}}]},
     {"label": "PASAPORTE", "pattern": [{"TEXT": {"REGEX": "^([a-zA-Z]{3}[0-9]{6})$"}}]},
-    {"label": "MATRICULA", "pattern": [{"LOWER": {"IN": matriculas}}, {"ORTH": " ", "OP": "*"}, {"IS_DIGIT": True, "LENGTH": 5}]},
-    {"label": "MATRICULA", "pattern": [{"LOWER": {"IN": matriculas}}, {"ORTH": " ", "OP": "*"}, {"IS_DIGIT": True, "LENGTH": 4}]},
+    {
+        "label": "MATRICULA",
+        "pattern": [{"LOWER": {"IN": matriculas}}, {"ORTH": " ", "OP": "*"}, {"IS_DIGIT": True, "LENGTH": 5}],
+    },
+    {
+        "label": "MATRICULA",
+        "pattern": [{"LOWER": {"IN": matriculas}}, {"ORTH": " ", "OP": "*"}, {"IS_DIGIT": True, "LENGTH": 4}],
+    },
     {"label": "EPOF", "pattern": [{"ORTH": {"IN": lista_de_enfermedades}}]},
 ]
 
