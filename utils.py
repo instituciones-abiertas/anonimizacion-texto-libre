@@ -94,7 +94,7 @@ def are_parameters_ok_to_anonymize(args):
     return True
 
 
-def get_text_from_file(origin_path, file_name, column_to_use):
+def get_text_from_file(origin_path, file_name, column_to_use, include_titles):
     """
     :param origin_path: Path to the file to be used.
     :param file_name: Name of the file that contains the needed text.
@@ -104,14 +104,14 @@ def get_text_from_file(origin_path, file_name, column_to_use):
     file_path = origin_path + file_name
     with open(file_path, "r") as file:
         columns = []
-        reader = csv.DictReader(file)
+        reader = csv.reader(file)
+        if include_titles:
+            next(reader)
+
         for row in reader:
-            if type(column_to_use) == str:
-                only_included_cols = dict(filter(lambda elem: elem[0] == column_to_use, row.items()))
-            else:
-                only_included_cols = dict(filter(lambda elem: elem[column_to_use], row.items()))
-            for (k, v) in only_included_cols.items():
-                columns.append(v)
+            only_included_cols = row[column_to_use]
+            columns.append(only_included_cols)
+
         return columns
 
 

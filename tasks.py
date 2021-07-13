@@ -44,6 +44,7 @@ def anonymize_doc(
         help="Column to use from the file (only one), indicate it position (consider that the first index is zero)",
         type=int,
     )
+    parser.add_argument("--include_titles", help="Does the file to be anonymized include titles?", action="store_true")
     parser.add_argument("--destination_folder", help="Path where the anonymized file is going to be saved", type=str)
     args = parser.parse_args()
 
@@ -74,7 +75,7 @@ def anonymize_doc(
         if args.text:
             anonymized_docs = anonymize_text(nlp, args.text, not args.save_file)
         else:
-            doc_text = get_text_from_file(args.origin_path, args.file_name, args.column_to_use)
+            doc_text = get_text_from_file(args.origin_path, args.file_name, args.column_to_use, args.include_titles)
             anonymized_docs = []
             for text in doc_text:
                 anonymized_text = anonymize_text(nlp, text, not args.save_file)
