@@ -115,34 +115,39 @@ def get_text_from_file(origin_path, file_name, column_to_use):
         return columns
 
 
-def save_csv_file(origin_path, filename, doc, destination_folder):
+def save_anonymized_file(origin_path, filename, doc, destination_folder, save_txt_file):
     """
     We copy the original csv file content and we add the anonymized texts in a new column added to the end.
     :param origin_path: Path to the file that has been anonymized.
     :param filename: name of the file that has been anonymized.
     :param doc: doc text anonymized.
     :param destination_folder: Path where the csv file is going to be saved.
+    :param save_txt_file: Flag that indicates if the file to be saved is txt.
     """
-    name, _ = filename.split(".")
-    file_name = name + "_anonimizado.csv"
+    if save_txt_file:
+        file_name = filename
+        with open(destination_folder + "/" + file_name, "w") as file:
+            file.write(doc)
+    else:
+        name, _ = filename.split(".")
+        file_name = name + "_anonimizado.csv"
+        with open(origin_path + "/" + filename, "r") as csvinput:
+            with open(destination_folder + "/" + file_name, "w") as csvoutput:
+                writer = csv.writer(csvoutput, lineterminator="\n")
+                reader = csv.reader(csvinput)
 
-    with open(origin_path + "/" + filename,'r') as csvinput:
-        with open(destination_folder + "/" + file_name, 'w') as csvoutput:
-            writer = csv.writer(csvoutput, lineterminator='\n')
-            reader = csv.reader(csvinput)
-
-            all = []
-            row = next(reader)
-            row.append('texto_anonimizado')
-            all.append(row)
-
-            for idx, row in enumerate(reader):
-                row.append(doc[idx])
+                all = []
+                row = next(reader)
+                row.append("texto_anonimizado")
                 all.append(row)
 
-            writer.writerows(all)
+                for idx, row in enumerate(reader):
+                    row.append(doc[idx])
+                    all.append(row)
 
-        logger.info(f"Se guardó el archivo {file_name} en la carpeta {destination_folder}")
+                writer.writerows(all)
+
+    logger.info(f"Se guardó el archivo {file_name} en la carpeta {destination_folder}")
 
 
 def generate_csv_file(result, destination_folder, logger):
