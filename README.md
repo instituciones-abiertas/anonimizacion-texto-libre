@@ -19,6 +19,8 @@
 
         python -m spacy download es_core_news_lg
 
+5. For every anonymization you make, you will find information in a log file located in the folder `logs`.
+
 
 ## Main functions
 
