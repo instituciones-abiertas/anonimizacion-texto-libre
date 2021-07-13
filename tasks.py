@@ -7,7 +7,7 @@ from utils import (
     create_logger,
     check_dir,
     generate_csv_file,
-    save_csv_file,
+    save_anonymized_file,
     are_parameters_ok_to_anonymize,
     get_text_from_file,
 )
@@ -77,7 +77,12 @@ def anonymize_doc(
                 anonymized_docs.append(anonymized_text)
 
         if args.save_file:
-            save_csv_file(args.file_name or DEFAULT_FILE_NAME, anonymized_docs, args.destination_folder)
+            save_anonymized_file(
+                args.file_name or DEFAULT_FILE_NAME,
+                anonymized_docs,
+                args.destination_folder,
+                True if args.text else False,
+            )
         elif type(anonymized_docs) == list:
             import pdb
 
