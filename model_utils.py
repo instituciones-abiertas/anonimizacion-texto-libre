@@ -4,6 +4,7 @@ from utils import bcolors
 from spacy.tokens import Span
 from spacy.language import Language
 from pipeline_components.entity_ruler import ruler_patterns
+from pipeline_components.entity_custom import entity_custom
 
 EXCLUDED_ENTS = ["MISC", "ORG"]
 
@@ -18,7 +19,7 @@ class Nlp:
         ruler = self.nlp.add_pipe("entity_ruler", config={"overwrite_ents": True})
         ruler.add_patterns(ruler_patterns)
 
-        # TODO agregar entityCustom para post-procesamiento
+        self.nlp.add_pipe("entity_custom")
 
     def generate_doc(self, text):
         return self.nlp(text)
@@ -56,7 +57,7 @@ def replace_tokens_with_labels(doc, color_entities):
     ents = list(doc.ents)
     filtered_ents = [ent for ent in ents if ent.label_ not in EXCLUDED_ENTS]
     for ent in filtered_ents:
-        print(f"se va a reemplazar ent.text: {ent.text} - {ent.label_}")
+        # print(f"se va a reemplazar ent.text: {ent.text} - {ent.label_}")
         # we replace every ocurrency no matter it position
         entity_label = f"<{ent.label_}>"
         if color_entities:
