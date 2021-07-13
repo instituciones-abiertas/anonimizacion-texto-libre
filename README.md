@@ -19,6 +19,8 @@
 
         python -m spacy download es_core_news_lg
 
+5. For every anonymization you make, you will find information in a log file located in the folder `logs`.
+
 
 ## Main functions
 
@@ -33,6 +35,7 @@ Use this function when you want to anonymize a text, for that you have two (2) o
 - `origin_path`: Path to obtain the file to be anonymized.
 - `file_name`: The filename from the file to be anonymized.
 - `column_to_use`: Column from the file (only one) to obtain the text to be anonymized, indicate the column position (consider that the first index is zero).
+- `include_titles`: Flag that indicates if the file to be anonymized include titles.
 - `destination_folder`: Path where the anonymized file is going to be saved.
 
 ### Examples

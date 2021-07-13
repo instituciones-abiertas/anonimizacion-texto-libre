@@ -1,7 +1,7 @@
 from utils import get_text_from_file
 
-lista_de_enfermedades = get_text_from_file("./data/", "epof.csv", 0)
-matriculas = get_text_from_file("./data/", "matriculas.csv", 0)
+lista_de_enfermedades = get_text_from_file("./data/", "epof.csv", 0, False)
+matriculas = get_text_from_file("./data/", "matriculas.csv", 0, False)
 
 dni = [
     {"label": "NUM_DNI", "pattern": [{"SHAPE": "d.ddd.ddd"}]},
@@ -9,11 +9,14 @@ dni = [
     {"label": "NUM_DNI", "pattern": [{"SHAPE": "ddd.ddd.ddd"}]},
 ]
 
+# FIXME detecta fijos y celulares? buscar regex porque NO detecta 3517856841
+
 telefonos = [
-    {"label": "NUM_TELÉFONO", "pattern": [{"SHAPE": "dd-dddd-dddd"}]},
     {"label": "NUM_TELÉFONO", "pattern": [{"SHAPE": "dddddddddd"}]},
+    {"label": "NUM_TELÉFONO", "pattern": [{"SHAPE": "dd-dddd-dddd"}]},
     {"label": "NUM_TELÉFONO", "pattern": [{"SHAPE": "dddd-dddd"}]},
     {"label": "NUM_TELÉFONO", "pattern": [{"SHAPE": "dddd-ddd-dddd"}]},
+    {"label": "NUM_TELÉFONO", "pattern": [{"SHAPE": "ddd-ddd-dddd"}]},
 ]
 
 ruler_patterns = [
