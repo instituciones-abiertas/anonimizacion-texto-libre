@@ -14,7 +14,7 @@ from utils import (
 from model_utils import Nlp, get_comparison_result, anonymize_text
 
 logger = create_logger()
-DEFAULT_FILE_NAME = "texto.txt"
+DEFAULT_FILE_NAME = "texto_anonimizado.txt"
 MODEL_NAME = "es_core_news_lg"
 
 
@@ -22,7 +22,11 @@ def anonymize_doc(
     text=None, save_file=False, origin_path=None, file_name=False, column_to_use=None, destination_folder=None
 ):
     """
+    :param text: Text to be anonymized.
+    :param save_file: Flag that indicates if the user wants to save the file or not.
     :param origin_path: Path to the file to be anonymized.
+    :param file_name: The filename from the file to be anonymized
+    :param column_to_use: Column to use from the file (only one), indicate it position (consider that the first index is zero)
     :param destination_folder: Path where the anonymized file is going to be saved.
     :return: Notification when the process is finished.
     """
@@ -78,15 +82,13 @@ def anonymize_doc(
 
         if args.save_file:
             save_anonymized_file(
+                args.origin_path,
                 args.file_name or DEFAULT_FILE_NAME,
                 anonymized_docs,
                 args.destination_folder,
                 True if args.text else False,
             )
         elif type(anonymized_docs) == list:
-            import pdb
-
-            pdb.set_trace()
             print(
                 "\n"
                 + bcolors.WARNING
