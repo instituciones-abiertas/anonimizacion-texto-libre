@@ -15,7 +15,7 @@ from model_utils import Nlp, get_comparison_result, anonymize_text
 
 logger = create_logger()
 DEFAULT_FILE_NAME = "texto_anonimizado.txt"
-MODEL_NAME = "es_core_news_lg"
+MODEL_NAME = "es_core_news_lg"  # Sólo detecta: LOC, MISC, ORG, PER
 
 
 def anonymize_doc(
@@ -28,7 +28,7 @@ def anonymize_doc(
     :param file_name: The filename from the file to be anonymized
     :param column_to_use: Column to use from the file (only one), indicate it position (consider that the first index is zero)
     :param destination_folder: Path where the anonymized file is going to be saved.
-    :return: Notification when the process is finished.
+    :return: Anonymized text when is not saved to a file.
     """
 
     parser = argparse.ArgumentParser()
@@ -91,23 +91,25 @@ def anonymize_doc(
             )
         elif type(anonymized_docs) == list:
             print(
-                "\n"
-                + bcolors.WARNING
-                + "El texto anonimizado tiene varias filas, recomendamos guardarlo como archivo."
-                + bcolors.ENDC
+                f"""
+                \n
+                {bcolors.WARNING}
+                El texto anonimizado tiene varias filas, recomendamos guardarlo como archivo.
+                {bcolors.ENDC}
+            """
             )
             print("\n" + bcolors.OKGREEN + "Texto anonimizado:" + bcolors.ENDC + f" \n{anonymized_docs}")
         else:
             print("\n" + bcolors.OKGREEN + "Texto anonimizado:" + bcolors.ENDC + f" \n{anonymized_docs}")
 
         logger.info(f"Anonimización finalizada en {time() - start} segundos.")
+        return anonymized_docs
     else:
         print(
-            "Revise los parámetros enviados para poder anonimizar. Para más información consulte la ayuda: "
-            + bcolors.WARNING
-            + "'python tasks.py anonymize_doc --help'"
-            + bcolors.ENDC
-            + "."
+            f"""
+            Revise los parámetros enviados para poder anonimizar. Para más información consulte la ayuda:
+            {bcolors.WARNING}'python tasks.py anonymize_doc --help'{bcolors.ENDC}.
+        """
         )
 
 
