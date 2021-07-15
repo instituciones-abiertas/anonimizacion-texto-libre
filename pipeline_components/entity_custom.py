@@ -67,6 +67,24 @@ address_second_left_nbors = [
 phone_lemma = ["teléfono", "tel", "celular", "número", "numerar", "telefónico"]
 phone_text = ["telefono", "tel", "cel"]
 
+drx_nbor = [
+    "dr",
+    "dr.",
+    "dra",
+    "dra.",
+    "doctor",
+    "doctora",
+    "médico",
+    "medico",
+    "médica",
+    "medica",
+]
+
+drx_nbor_2_tokens = [
+    "agente sanitario",
+    "agente sanitaria",
+]
+
 
 def remove_wrong_labeled_entity_span(ent_list, ent_to_remove):
     return [ent for ent in ent_list if not (ent_to_remove.start == ent.start and ent_to_remove.end == ent.end)]
@@ -107,6 +125,20 @@ def get_aditional_left_tokens_for_address(ent):
     return 0
 
 
+def get_aditional_left_tokens_for_drx(ent):
+    if ent.label_ in ["PER"]:
+        token = ent[0]
+        if token.nbor(-1).lower_ in drx_nbor:
+            return 1
+        if token.nbor(-2).lower_ in drx_nbor:
+            return 2
+        if token.nbor(-3).lower_ in drx_nbor:
+            return 3
+        if token.nbor(-4).lower_ in drx_nbor:
+            return 4
+    return 0
+
+
 def get_entity_to_remove_if_contained_by(ent_start, ent_end, list_entities):
     for i, ent_from_list in enumerate(list_entities):
         if (
@@ -129,6 +161,18 @@ def generate_address_span(ent, new_ents, doc):
             return Span(doc, ent_start, ent.end, label="DIRECCIÓN")
 
     return Span(doc, ent_start, ent.end, label="DIRECCIÓN")
+
+
+def generate_drx_span(ent, new_ents, doc):
+    drx_token = get_aditional_left_tokens_for_drx(ent)
+    ent_start = ent.start - drx_token
+    ent_to_remove = get_entity_to_remove_if_contained_by(ent_start, ent.end, new_ents)
+    if ent_to_remove:
+        if (ent.end - ent_start) > (ent_to_remove.end - ent_to_remove.start):
+            new_ents = remove_wrong_labeled_entity_span(new_ents, ent_to_remove)
+            return Span(doc, ent_start, ent.end, label="DRX")
+
+    return Span(doc, ent_start, ent.end, label="DRX")
 
 
 # TODO revisar!
@@ -194,6 +238,17 @@ def is_phone(ent):
     )
 
 
+def is_doctor(ent):
+    first_token = ent[0]
+    return ent.label_ == "PER" and (
+        first_token.nbor(-1).text in drx_nbor
+        or first_token.nbor(-2).text in drx_nbor
+        or first_token.nbor(-3).text in drx_nbor
+        or f"{first_token.nbor(-2).text} {first_token.nbor(-1).text}" in drx_nbor_2_tokens
+        or f"{first_token.nbor(-3).text} {first_token.nbor(-2).text}" in drx_nbor_2_tokens
+    )
+
+
 @Language.component("entity_custom")
 def entity_custom(doc):
     new_ents = []
@@ -208,7 +263,7 @@ def entity_custom(doc):
         if not is_from_first_tokens(token.i) and is_phone_token(token):
             add_span(token.i - 1, token.i + 1, "NUM_TELÉFONO")
 
-    print(doc.ents)
+    print(f"\ndoc.ents: {doc.ents}")
     for i, ent in enumerate(doc.ents):
         # print(f"text: {ent.text} - label: {ent.label_}")
         if not is_from_first_tokens(ent.start) and is_address(ent):
@@ -218,6 +273,8 @@ def entity_custom(doc):
             # TODO entra acá en algún momento???
             print(f"phone  ent: {ent}")
             add_span(ent.start, ent.end, "NUM_TELÉFONO")
+        if not is_from_first_2_tokens(ent.start) and is_doctor(ent):
+            new_ents.append(generate_drx_span(ent, new_ents, doc))
 
     if new_ents:
         # We'd always want the new entities to be appended first because
