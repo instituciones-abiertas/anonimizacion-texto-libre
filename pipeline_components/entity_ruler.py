@@ -9,8 +9,6 @@ dni = [
     {"label": "NUM_DNI", "pattern": [{"SHAPE": "ddd.ddd.ddd"}]},
 ]
 
-# FIXME detecta fijos y celulares? buscar regex porque NO detecta 3517856841
-
 telefonos = [
     {"label": "NUM_TELÉFONO", "pattern": [{"SHAPE": "dddddddddd"}]},
     {"label": "NUM_TELÉFONO", "pattern": [{"SHAPE": "dd-dddd-dddd"}]},
