@@ -107,8 +107,8 @@ def anonymize_doc(
     else:
         print(
             f"""
-            Revise los parámetros enviados para poder anonimizar. Para más información consulte la ayuda:
-            {bcolors.WARNING}'python tasks.py anonymize_doc --help'{bcolors.ENDC}.
+Revise los parámetros enviados para poder anonimizar. Para más información consulte la ayuda:
+{bcolors.WARNING}'python tasks.py anonymize_doc --help'{bcolors.ENDC}.
         """
         )
 
@@ -162,7 +162,12 @@ def evaluate_efficiency(doc_origin_path=None, json_origin_path=None, destination
 
 if __name__ == "__main__":
     args = sys.argv
-    # args[0] = current file
-    # args[1] = function name
-    # args[2] = function args: (*unpacked)
-    globals()[args[1]](*args[2:])
+    if len(args) <= 1:
+        print(
+            f"{bcolors.WARNING}Debe ingresar una función a ejecutar y los parámetros correspondientes.{bcolors.ENDC}\nPor ejemplo: python tasks.py anonymize_doc --help"
+        )
+    else:
+        # args[0] = current file
+        # args[1] = function name
+        # args[2] = function args: (*unpacked)
+        globals()[args[1]](*args[2:])
