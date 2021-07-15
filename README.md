@@ -64,10 +64,7 @@ Use this function when you want to anonymize a text, for that you have two (2) o
 
 ## Using it!
 
-        1. Open a console and run this command to see the options menu
-                `python main.py`
-
-        2 Open a console and run the command
+        Open a console and run the command
                 `python [function you want to use] [parameters for that function]`
 
 
