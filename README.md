@@ -24,7 +24,7 @@
 
 ## Main functions
 
-####`anonymize_doc()`
+#### `anonymize_doc()`
 Use this function when you want to anonymize a text, for that you have two (2) options:
 - free text
 - csv file
@@ -39,15 +39,21 @@ Use this function when you want to anonymize a text, for that you have two (2) o
 - `destination_folder`: Path where the anonymized file is going to be saved.
 
 ### Examples
-If you want to anonymize free text and see the results in the console:
+
+- If you want to anonymize free text and see the results in the console:
+
 `python tasks.py anonymize_doc --text="this is the text to anonymize"`
 
 
-If you want to anonymize free text and save it to a file in the folder results:
+
+- If you want to anonymize free text and save it to a file in the folder results:
+
 `python tasks.py anonymize_doc --text="this is the text to anonymize" --save_file --destination_folder="./results"`
 
 
-If you want to anonymize text from the `third column` in the file `dataset1.csv` located in the folder `data` and save it to a file in the folder `results`:
+
+- If you want to anonymize text from the `third column` in the file `dataset1.csv` located in the folder `data` and save it to a file in the folder `results`:
+
 `python tasks.py anonymize_doc --origin_path="./data" --file_name="dataset1.csv" --column_to_use=2 --save_file --destination_folder="./results"`
 
 ### Considerations
@@ -58,10 +64,7 @@ If you want to anonymize text from the `third column` in the file `dataset1.csv`
 
 ## Using it!
 
-        1. Open a console and run this command to see the options menu
-                `python main.py`
-
-        2 Open a console and run the command
+        Open a console and run the command
                 `python [function you want to use] [parameters for that function]`
 
 
