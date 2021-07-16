@@ -81,7 +81,6 @@ def replace_tokens_with_labels(doc, color_entities):
 
 def anonymize_text(nlp, text, color_entities):
     doc = nlp.generate_doc(text)
-    # TODO podría ser útil si tienen mucho texto en mayúsculas que el modelo no detecta
     # found_texts = find_ent_ocurrencies_in_upper_text(doc.text, doc.ents)
 
     anonymized_text = replace_tokens_with_labels(doc, color_entities)

@@ -8,11 +8,6 @@ from functools import partial
 lista_de_enfermedades = get_text_from_file("./data/", "epof.csv", 0, False)
 matriculas = get_text_from_file("./data/", "matriculas.csv", 0, False)
 
-# TODO entity custom para:
-# dr / dra
-# matricula, ver nbors del archivo de matriculas
-# enfermedades, ver nbors del archivo de epof
-
 address_first_left_nbors = [
     "calle",
     "Calle",
@@ -26,6 +21,9 @@ address_first_left_nbors = [
     "Pasaje",
     "Parcela",
     "parcela",
+    "domicilio",
+    "casa",
+    "Casa",
 ]
 
 address_second_left_nbors = [
@@ -51,13 +49,14 @@ address_second_left_nbors = [
 
 address_connector = "en"
 
-address_first_left_nbors = [
+place_first_left_nbors = [
     "asentamiento",
     "paraje",
     "country",
     "distrito",
+    "barrio",
 ]
-address_second_left_nbors = [
+place_second_left_nbors = [
     "localidad",
     "ciudad",
     "vivir",
@@ -108,7 +107,7 @@ is_from_first_2_tokens = partial(is_between_tokens, left=0, right=2)
 def get_aditional_left_tokens_for_address(ent):
     if ent.label_ in ["PER"] and ent[-1].nbor().like_num:
         return 1
-    if ent.label_ in ["NUM"]:  # FIXME el modelo no detecta NUM
+    if ent.label_ in ["LOC"]:
         token = ent[0]
         if token.nbor(-1).lower_ in address_first_left_nbors:
             return 1
@@ -122,6 +121,15 @@ def get_aditional_left_tokens_for_address(ent):
             return 4
         if token.nbor(-4).lower_ in address_second_left_nbors:
             return 3 - 1 if token.nbor(-3).lower_ == address_connector else 0
+    return 0
+
+
+def get_aditional_right_tokens_for_address(ent):
+    last_ent_pos = ent[len(ent.text.split()) - 1]
+    if last_ent_pos.nbor(2).like_num:
+        return 2
+    if last_ent_pos.nbor(1).like_num:
+        return 1
     return 0
 
 
@@ -153,14 +161,16 @@ def get_entity_to_remove_if_contained_by(ent_start, ent_end, list_entities):
 
 def generate_address_span(ent, new_ents, doc):
     address_token = get_aditional_left_tokens_for_address(ent)
+    extra_tokens_to_right = get_aditional_right_tokens_for_address(ent)
     ent_start = ent.start - address_token
-    ent_to_remove = get_entity_to_remove_if_contained_by(ent_start, ent.end, new_ents)
+    ent_end = ent.end + extra_tokens_to_right
+    ent_to_remove = get_entity_to_remove_if_contained_by(ent_start, ent_end, new_ents)
     if ent_to_remove:
         if (ent.end - ent_start) > (ent_to_remove.end - ent_to_remove.start):
             new_ents = remove_wrong_labeled_entity_span(new_ents, ent_to_remove)
             return Span(doc, ent_start, ent.end, label="DIRECCIÓN")
 
-    return Span(doc, ent_start, ent.end, label="DIRECCIÓN")
+    return Span(doc, ent_start, ent_end, label="DIRECCIÓN")
 
 
 def generate_drx_span(ent, new_ents, doc):
@@ -175,7 +185,6 @@ def generate_drx_span(ent, new_ents, doc):
     return Span(doc, ent_start, ent.end, label="DRX")
 
 
-# TODO revisar!
 def is_address(ent):
     first_token = ent[0]
     last_token = ent[-1]
@@ -188,13 +197,10 @@ def is_address(ent):
     address_4_tokens_to_left_second_nbors = is_token_in_x_left_pos(first_token, 4, address_second_left_nbors)
 
     is_address_from_PER = ent.label_ in ["PER"] and (
-        address_1_tokens_to_left
-        or address_2_tokens_to_left_second_nbors
-        or last_token.like_num
-        # or (last_token.nbor() and last_token.nbor().like_num) #FIXME por qué busca nbor(1) del ultimo token?
+        address_1_tokens_to_left or address_2_tokens_to_left_second_nbors or last_token.like_num
     )
 
-    is_address_from_NUM = ent.label_ in ["NUM"] and (  # FIXME no detecta NUM
+    is_address_from_LOC = ent.label_ in ["LOC"] and (
         address_1_tokens_to_left
         or address_2_tokens_to_left_first_nbors
         or address_2_tokens_to_left_second_nbors
@@ -204,14 +210,14 @@ def is_address(ent):
         or address_4_tokens_to_left_second_nbors
     )
 
-    return is_address_from_PER or is_address_from_NUM
+    return is_address_from_PER or is_address_from_LOC
 
 
 def is_place_token(token):
     # Este enfoque puede generar falsos positivos, tener cuidado con las palabras que se usan
-    return (token.nbor(-1).lower_ in address_first_left_nbors and not token.is_stop) or (
+    return (token.nbor(-1).lower_ in place_first_left_nbors and not token.is_stop) or (
         token.nbor(-2).lower_ in address_second_left_nbors
-        or token.nbor(-2).lemma_ in address_second_left_nbors
+        or token.nbor(-2).lemma_ in place_second_left_nbors
         and not token.is_stop
     )
 
@@ -226,18 +232,7 @@ def is_phone_token(token):
     )
 
 
-def is_phone(ent):
-    first_token = ent[0]
-    return (
-        first_token.nbor(-1).lemma_ in phone_lemma
-        or first_token.nbor(-2).lemma_ in phone_lemma
-        or first_token.nbor(-3).lemma_ in phone_lemma
-        or first_token.nbor(-1).text in phone_text
-        or first_token.nbor(-2).text in phone_text
-        or (first_token.nbor(-1).text == "(" and first_token.nbor(1).text == ")")
-    )
-
-
+# TODO se puede hacer una regla buscando los tokens que tienen forma de nombre y dice dr / dra antes
 def is_doctor(ent):
     first_token = ent[0]
     return ent.label_ == "PER" and (
@@ -256,23 +251,23 @@ def entity_custom(doc):
     def add_span(start, end, label):
         new_ents.append(Span(doc, start, end, label=label))
 
+    # TODO entity custom para:
+    # matricula, ver nbors del archivo de matriculas (TOKEN)
+    # enfermedades, ver nbors del archivo de epof (TOKEN)
+
     for token in doc:
         # print(f"token_ {token}")
         if not is_from_first_2_tokens(token.i) and is_place_token(token):
             add_span(token.i - 1, token.i + 1, "LOC")
         if not is_from_first_tokens(token.i) and is_phone_token(token):
             add_span(token.i - 1, token.i + 1, "NUM_TELÉFONO")
+        # TODO se puede agregar deteccion de direccion si hay un número que antes tiene un nbor de address
 
-    print(f"\ndoc.ents: {doc.ents}")
+    # print(f"\ndoc.ents: {doc.ents}")
     for i, ent in enumerate(doc.ents):
-        # print(f"text: {ent.text} - label: {ent.label_}")
+        print(f"text: {ent.text} - label: {ent.label_}")
         if not is_from_first_tokens(ent.start) and is_address(ent):
-            print(f"address  ent: {ent}")
             new_ents.append(generate_address_span(ent, new_ents, doc))
-        if not is_from_first_2_tokens(ent.start) and is_phone(ent):
-            # TODO entra acá en algún momento???
-            print(f"phone  ent: {ent}")
-            add_span(ent.start, ent.end, "NUM_TELÉFONO")
         if not is_from_first_2_tokens(ent.start) and is_doctor(ent):
             new_ents.append(generate_drx_span(ent, new_ents, doc))
 
