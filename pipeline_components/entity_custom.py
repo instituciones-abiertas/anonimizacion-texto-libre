@@ -147,6 +147,18 @@ def get_aditional_left_tokens_for_drx(ent):
     return 0
 
 
+def get_aditional_left_tokens_for_drx_token(token):
+    if token.nbor(-1).lower_ in drx_nbor:
+        return 1
+    if token.nbor(-2).lower_ in drx_nbor:
+        return 2
+    if token.nbor(-3).lower_ in drx_nbor:
+        return 3
+    if token.nbor(-4).lower_ in drx_nbor:
+        return 4
+    return 0
+
+
 def get_entity_to_remove_if_contained_by(ent_start, ent_end, list_entities):
     for i, ent_from_list in enumerate(list_entities):
         if (
@@ -232,15 +244,23 @@ def is_phone_token(token):
     )
 
 
-# TODO se puede hacer una regla buscando los tokens que tienen forma de nombre y dice dr / dra antes
 def is_doctor(ent):
     first_token = ent[0]
     return ent.label_ == "PER" and (
-        first_token.nbor(-1).text in drx_nbor
-        or first_token.nbor(-2).text in drx_nbor
-        or first_token.nbor(-3).text in drx_nbor
-        or f"{first_token.nbor(-2).text} {first_token.nbor(-1).text}" in drx_nbor_2_tokens
-        or f"{first_token.nbor(-3).text} {first_token.nbor(-2).text}" in drx_nbor_2_tokens
+        first_token.nbor(-1).lower_ in drx_nbor
+        or first_token.nbor(-2).lower_ in drx_nbor
+        or first_token.nbor(-3).lower_ in drx_nbor
+        or f"{first_token.nbor(-2).lower_} {first_token.nbor(-1).lower_}" in drx_nbor_2_tokens
+        or f"{first_token.nbor(-3).lower_} {first_token.nbor(-2).lower_}" in drx_nbor_2_tokens
+    )
+
+
+def is_doctor_token(token):
+    return token.is_title and (
+        token.nbor(-1).lower_ in drx_nbor
+        or token.nbor(-2).lower_ in drx_nbor
+        or f"{token.nbor(-2).lower_} {token.nbor(-1).lower_}" in drx_nbor_2_tokens
+        or f"{token.nbor(-3).lower_} {token.nbor(-2).lower_}" in drx_nbor_2_tokens
     )
 
 
@@ -252,8 +272,9 @@ def entity_custom(doc):
         new_ents.append(Span(doc, start, end, label=label))
 
     # TODO entity custom para:
-    # matricula, ver nbors del archivo de matriculas (TOKEN)
-    # enfermedades, ver nbors del archivo de epof (TOKEN)
+    # MATRICULA, ver nbors del archivo de matriculas (TOKEN)
+    # EPoF, ver nbors del archivo de epof (TOKEN)
+    # DIRECCION si hay un número que antes tiene un nbor de address (TOKEN)
 
     for token in doc:
         # print(f"token_ {token}")
@@ -261,7 +282,9 @@ def entity_custom(doc):
             add_span(token.i - 1, token.i + 1, "LOC")
         if not is_from_first_tokens(token.i) and is_phone_token(token):
             add_span(token.i - 1, token.i + 1, "NUM_TELÉFONO")
-        # TODO se puede agregar deteccion de direccion si hay un número que antes tiene un nbor de address
+        if not is_from_first_tokens(token.i) and is_doctor_token(token):
+            let_extra_tokens = get_aditional_left_tokens_for_drx_token(token)
+            add_span(token.i - let_extra_tokens, token.i + 1, "DRX")
 
     # print(f"\ndoc.ents: {doc.ents}")
     for i, ent in enumerate(doc.ents):
