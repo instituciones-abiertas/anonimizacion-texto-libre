@@ -56,6 +56,7 @@ place_first_left_nbors = [
     "distrito",
     "barrio",
 ]
+
 place_second_left_nbors = [
     "localidad",
     "ciudad",
@@ -301,16 +302,47 @@ def is_doctor_token(token):
     )
 
 
+def is_matricula(token):
+    splitted_token = token.text.split(".")
+    any_part_is_matricula = False
+    if token.like_num or splitted_token[0] != token.text:
+        any_part_is_matricula = any([part for part in splitted_token if part.lower() in matriculas])
+
+    return (
+        token.like_num
+        and (
+            token.nbor(-1).lower_ in matriculas
+            or token.nbor(-2).lower_ in matriculas
+            or token.nbor(-3).lower_ in matriculas
+        )
+        or any_part_is_matricula
+    )
+
+
+# def is_epof(token):
+#     if not token.is_stop and len(token.text) > 2:
+#         # any_part_is_epof = any([enfermedad for enfermedad in lista_de_enfermedades if token.lower_ in enfermedad.lower().split()])
+#         found_epof = [enfermedad for enfermedad in lista_de_enfermedades if token.lower_ in enfermedad.lower().split()]
+#         if len(found_epof):
+#             print(f"\ntoken: {token.lower_} - found: {found_epof}")
+#             # import pdb; pdb.set_trace()
+#             #TODO deberia chequear si es alguna de las que encontró en base a la posición del token en las epof encontradas
+
+#         return (
+#                 token.lower_ in lista_de_enfermedades
+#                 or token.nbor(-1).lower_ in lista_de_enfermedades
+#                 or token.nbor(-2).lower_ in lista_de_enfermedades
+#                 or token.nbor(-3).lower_ in lista_de_enfermedades
+#             )
+#     return False
+
+
 @Language.component("entity_custom")
 def entity_custom(doc):
     new_ents = []
 
     def add_span(start, end, label):
         new_ents.append(Span(doc, start, end, label=label))
-
-    # TODO entity custom para:
-    # MATRICULA, ver nbors del archivo de matriculas (TOKEN)
-    # EPoF, ver nbors del archivo de epof (TOKEN)
 
     for token in doc:
         # print(f"token_ {token}")
@@ -324,6 +356,11 @@ def entity_custom(doc):
         if not is_from_first_tokens(token.i) and is_address_token_from_number(token):
             left_extra_tokens = get_aditional_left_tokens_for_address_token(token)
             add_span(token.i - left_extra_tokens, token.i + 1, "DIRECCION")
+        if not is_from_first_tokens(token.i) and is_matricula(token):
+            add_span(token.i - 1, token.i + 1, "MATRICULA")
+        # if not is_from_first_tokens(token.i) and is_epof(token):
+        #     print(f"is_epof token: {token}")
+        #     add_span(token.i - 1, token.i + 1, "EPOF")
 
     # print(f"\ndoc.ents: {doc.ents}")
     for i, ent in enumerate(doc.ents):
