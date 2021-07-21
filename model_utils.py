@@ -91,5 +91,4 @@ def get_comparison_result(nlp, doc_text, annotations):
     doc = nlp(doc_text)
     ents = doc.ents
     print(ents)
-    # ver lo que está  hecho en https://recursos.camba.coop/llave-en-mano/ia2/ia2-server/blob/develop/apps/entity/management/commands/stats.py
     return []

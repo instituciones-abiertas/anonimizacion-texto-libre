@@ -9,6 +9,7 @@ from utils import (
     generate_csv_file,
     save_anonymized_file,
     are_parameters_ok_to_anonymize,
+    are_parameters_ok_to_evaluate_efficiency,
     get_text_from_file,
 )
 from model_utils import Nlp, get_comparison_result, anonymize_text
@@ -113,50 +114,79 @@ Revise los parámetros enviados para poder anonimizar. Para más información co
         )
 
 
-def evaluate_efficiency(doc_origin_path=None, json_origin_path=None, destination_folder=None):
+def evaluate_efficiency(
+    origin_path=None,
+    file_name=None,
+    column_to_use=None,
+    json_origin_path=None,
+    json_file_name=None,
+    destination_folder=None,
+):
     """
-    :param doc_origin_path: Path to the file to be analyzed.
-    :param json_origin_path: Path to the document annotations file.
-    :param destination_folder: Path where the comparison results file is going to be saved. The file will be called results.csv.
+    :param origin_path: Path to the file to be anonymized on the way to evaluate efficiency.
+    :param file_name: The filename from the file to be anonymized on the way to evaluate efficiency.
+    :param column_to_use: Column to use from the file (only one), indicate it position (consider that the first index is zero).
+    :param json_origin_path: Path to the json file with the annotations from the document previously indicated.
+    :param json_file_name: The filename from the json file with the annotations from the document previously indicated (MUST be json).
+    :param destination_folder: Path where the comparison between the anonymization and the annotations will be saved. The file will be called results.csv.
     :return: Notification when the process is finished.
     """
-    can_execute = True
-    if not doc_origin_path:
-        can_execute = False
-        print(
-            "No has definido la ubicación del archivo a anonimizar o el archivo no existe.\nAsegúrate de ingresar el path completo."
-        )
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "function", help="To evaluate the efficiency of the model you should call evaluate_efficiency", type=str
+    )
+    parser.add_argument(
+        "--origin_path", help="Path to the file to be anonymized on the way to evaluate efficiency", type=str
+    )
+    parser.add_argument(
+        "--file_name", help="The filename from the file to be anonymized on the way to evaluate efficiency", type=str
+    )
+    parser.add_argument(
+        "--column_to_use",
+        help="Column to use from the file (only one), indicate it position (consider that the first index is zero)",
+        type=int,
+    )
+    parser.add_argument(
+        "--json_origin_path",
+        help="Path to the json file with the annotations from the document previously indicated",
+        type=str,
+    )
+    parser.add_argument(
+        "--json_file_name",
+        help="The filename from the json file with the annotations from the document previously indicated (MUST be json)",
+        type=str,
+    )
+    parser.add_argument(
+        "--destination_folder",
+        help="Path where the comparison between the anonymization and the annotations will be saved. The file will be called results.csv.",
+        type=str,
+    )
+    args = parser.parse_args()
 
-    if not json_origin_path:
-        can_execute = False
-        print(
-            "No has definido la ubicación del archivo json con las anotaciones del documento a analizar o el archivo no existe.\nAsegúrate de ingresar el path completo."
-        )
-
-    if not destination_folder:
-        can_execute = False
-        print(
-            "No has definido la ubicación de destino para el archivo de resultados del análisis o la carpeta destino no existe.\nAsegúrate de ingresar el path completo."
-        )
+    can_execute = are_parameters_ok_to_evaluate_efficiency(args)
 
     if can_execute:
         start = time()
         logger.info(
-            f"""Analizando el documento: {doc_origin_path} junto al archivo de anotaciones: {json_origin_path}.
+            f"""Analizando el documento: {origin_path+"/"+file_name} junto al archivo de anotaciones: {json_origin_path+"/"+json_file_name}.
                         \nEl resultado del análisis se guardará en la carpeta: {destination_folder}."""
         )
 
+        nlp = Nlp(MODEL_NAME)
+
         annotations = ""
-        nlp = Nlp("es_core_news_sm")
         doc_text = "texto de ejemplo"
         result = get_comparison_result(nlp, doc_text, annotations)
         generate_csv_file(result, destination_folder, logger)
-        logger.info(f"Análisis finalizado en {time() - start} segundos.")
-        print("Proceso terminado en {time() - start} segundos.")
+
+        print(f"Proceso terminado en {time() - start} segundos.")
+        logger.info(f"Evaluación de eficiencia al anonimizar finalizada en {time() - start} segundos.")
     else:
-        dir_path = os.path.dirname(os.path.realpath(__file__))
         print(
-            f"Si el archivo o la carpeta destino está en la misma ubicación que este script, el path debería comenzar con: {dir_path+'/'}"
+            f"""
+Revise los parámetros enviados para realizar la evaluación de eficiencia. Para más información consulte la ayuda:
+{bcolors.WARNING}'python tasks.py evaluate_efficiency --help'{bcolors.ENDC}.
+        """
         )
 
 

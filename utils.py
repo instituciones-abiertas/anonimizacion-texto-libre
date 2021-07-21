@@ -94,6 +94,68 @@ def are_parameters_ok_to_anonymize(args):
     return True
 
 
+def are_parameters_ok_to_evaluate_efficiency(args):
+    if not args.origin_path or not os.path.isdir(args.origin_path):
+        print(
+            "No has definido la ubicación del archivo a utilizar para evaluar la eficiencia del modelo"
+            + bcolors.WARNING
+            + "(falta el parámetro '--origin_path')"
+            + bcolors.ENDC
+            + " o la carpeta origen no existe."
+        )
+        return False
+
+    if not args.file_name:
+        print(
+            "No has definido el nombre del archivo a utilizar para evaluar la eficiencia del modelo"
+            + bcolors.WARNING
+            + "(falta el parámetro '--file_name')"
+            + bcolors.ENDC
+        )
+        return False
+
+    if args.column_to_use is None:
+        print(
+            "No has definido la columna a anonimizar del archivo "
+            + bcolors.WARNING
+            + "(falta el parámetro '--column_to_use')"
+            + bcolors.ENDC
+            + "."
+        )
+        return False
+
+    if not args.json_origin_path or not os.path.isdir(args.json_origin_path):
+        print(
+            "No has definido la ubicación del archivo json con las anotaciones a utilizar para evaluar la eficiencia del modelo"
+            + bcolors.WARNING
+            + "(falta el parámetro '--json_origin_path')"
+            + bcolors.ENDC
+            + " o la carpeta origen no existe."
+        )
+        return False
+
+    if not args.json_file_name:
+        print(
+            "No has definido el nombre del archivo json con las anotaciones a utilizar para evaluar la eficiencia del modelo"
+            + bcolors.WARNING
+            + "(falta el parámetro '--json_file_name')"
+            + bcolors.ENDC
+        )
+        return False
+
+    if not args.destination_folder or not os.path.isdir(args.destination_folder):
+        print(
+            "No has definido la ubicación de destino "
+            + bcolors.WARNING
+            + "(falta el parámetro '--destination_folder')"
+            + bcolors.ENDC
+            + " para el documento anonimizado o la carpeta destino no existe."
+        )
+        return False
+
+    return True
+
+
 def get_text_from_file(origin_path, file_name, column_to_use, include_titles):
     """
     :param origin_path: Path to the file to be used.
