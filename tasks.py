@@ -1,6 +1,7 @@
 import os
 import sys
 import argparse
+import json
 from time import time
 from utils import (
     bcolors,
@@ -17,6 +18,8 @@ from model_utils import Nlp, get_comparison_result, anonymize_text
 logger = create_logger()
 DEFAULT_FILE_NAME = "texto_anonimizado.txt"
 MODEL_NAME = "es_core_news_lg"  # Sólo detecta: LOC, MISC, ORG, PER
+
+nlp = Nlp(MODEL_NAME)
 
 
 def anonymize_doc(
@@ -71,8 +74,6 @@ def anonymize_doc(
                         \nEl resultado de la anonimización se {anonymization_output}."""
         )
 
-        nlp = Nlp(MODEL_NAME)
-
         if args.text:
             anonymized_docs = anonymize_text(nlp, args.text, not args.save_file)
         else:
@@ -125,7 +126,6 @@ def evaluate_efficiency(
     """
     :param origin_path: Path to the file to be anonymized on the way to evaluate efficiency.
     :param file_name: The filename from the file to be anonymized on the way to evaluate efficiency.
-    :param column_to_use: Column to use from the file (only one), indicate it position (consider that the first index is zero).
     :param json_origin_path: Path to the json file with the annotations from the document previously indicated.
     :param json_file_name: The filename from the json file with the annotations from the document previously indicated (MUST be json).
     :param destination_folder: Path where the comparison between the anonymization and the annotations will be saved. The file will be called results.csv.
@@ -140,11 +140,6 @@ def evaluate_efficiency(
     )
     parser.add_argument(
         "--file_name", help="The filename from the file to be anonymized on the way to evaluate efficiency", type=str
-    )
-    parser.add_argument(
-        "--column_to_use",
-        help="Column to use from the file (only one), indicate it position (consider that the first index is zero)",
-        type=int,
     )
     parser.add_argument(
         "--json_origin_path",
@@ -172,10 +167,12 @@ def evaluate_efficiency(
                         \nEl resultado del análisis se guardará en la carpeta: {destination_folder}."""
         )
 
-        nlp = Nlp(MODEL_NAME)
+        # asumo que es un archivo de texto
+        with open(f"{args.origin_path}/{args.file_name}", "r") as file:
+            doc_text = file.read()
+        with open(f"{args.json_origin_path}/{args.json_file_name}", "r") as f:
+            annotations = json.load(f)
 
-        annotations = ""
-        doc_text = "texto de ejemplo"
         result = get_comparison_result(nlp, doc_text, annotations)
         generate_csv_file(result, destination_folder, logger)
 

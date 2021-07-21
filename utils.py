@@ -114,16 +114,6 @@ def are_parameters_ok_to_evaluate_efficiency(args):
         )
         return False
 
-    if args.column_to_use is None:
-        print(
-            "No has definido la columna a anonimizar del archivo "
-            + bcolors.WARNING
-            + "(falta el parámetro '--column_to_use')"
-            + bcolors.ENDC
-            + "."
-        )
-        return False
-
     if not args.json_origin_path or not os.path.isdir(args.json_origin_path):
         print(
             "No has definido la ubicación del archivo json con las anotaciones a utilizar para evaluar la eficiencia del modelo"
@@ -134,9 +124,9 @@ def are_parameters_ok_to_evaluate_efficiency(args):
         )
         return False
 
-    if not args.json_file_name:
+    if not args.json_file_name or "json" not in args.json_file_name:
         print(
-            "No has definido el nombre del archivo json con las anotaciones a utilizar para evaluar la eficiencia del modelo"
+            "No has definido el nombre del archivo json con las anotaciones a utilizar para evaluar la eficiencia del modelo o NO es un archivo json"
             + bcolors.WARNING
             + "(falta el parámetro '--json_file_name')"
             + bcolors.ENDC

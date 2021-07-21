@@ -88,7 +88,12 @@ def anonymize_text(nlp, text, color_entities):
 
 
 def get_comparison_result(nlp, doc_text, annotations):
-    doc = nlp(doc_text)
+    # FIXME seria bueno usar anonymize_text porque considera las mayúsculas
+    doc = nlp.generate_doc(doc_text)
     ents = doc.ents
-    print(ents)
+    # TODO compare ents and annotations
+    print(f"ents: {ents}")
+    print(f"annotations: {annotations}")
+    for annot in annotations:
+        print(f"entidad:{annot['entidad']} - texto: {doc[annot['start']:annot['end']]}")
     return []
