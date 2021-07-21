@@ -1,12 +1,13 @@
 import re
 from utils import get_text_from_file
-from rapidfuzz import process, fuzz
+from rapidfuzz import fuzz
 from spacy.matcher import PhraseMatcher
 from spacy.tokens import Span, Doc
 from spacy.util import filter_spans
 from spacy.language import Language
 
 lista_de_enfermedades = get_text_from_file("./data/", "epof.csv", 0, False)
+MATCH_PERCENTAGE = 92  # when finding matches for epof, it will keep matches over this percentage  of matching
 
 
 @Language.factory("epof_phrase_matcher")
@@ -22,27 +23,22 @@ class EpofPhraseMatcher:
 
     def __call__(self, doc: Doc) -> Doc:
         matches = self.matcher(doc)
-        new_ents = []
 
-        print(f"matches: {matches}")
-        # TODO qué pasa cuando no encuentra nada?
-
-        if len(matches):
+        if matches:
+            # using PhraseMatcher from Spacy
             match = matches[0]
-            print("Matched based on lowercase token text:", match[0], doc[match[-2] : match[-1]])
-            new_ents.append(Span(doc, match[-2], match[-1], label="EPOF"))
+            start = match[-2]
+            end = match[-1]
         else:
+            # using FuzzyWuzzy to find matches
             tokens = [token.text for token in doc]
-            match = fuzzy_matcher(lista_de_enfermedades, tokens, 92)
-            print("Matched based on lowercase token text:", match[0], doc[match[-2] : match[-1] + 1])
-            new_ents.append(Span(doc, match[-2], match[-1] + 1, label="EPOF"))
+            match = fuzzy_matcher(lista_de_enfermedades, tokens, MATCH_PERCENTAGE)
+            if match:
+                start = match[-2]
+                end = match[-1] + 1
 
-            # for match_id, epof, start, end in matches:
-            #   print("Matched based on lowercase token text:", doc[start:end+1])
-            #   new_ents.append(Span(doc, start, end+1, label="EPOF"))
-
-        if new_ents:
-            doc.ents = filter_spans(new_ents + list(doc.ents))
+        if match:
+            doc.ents = filter_spans([Span(doc, start, end, label="EPOF")] + list(doc.ents))
 
         return doc
 
@@ -64,4 +60,4 @@ def fuzzy_matcher(features, tokens, match=None):
                 if fuzz.ratio(matched_phrase, feature.lower()) > match:
                     matches.append([matched_phrase, feature, i, j])
 
-    return matches[0]
+    return matches[0] if len(matches) else matches
