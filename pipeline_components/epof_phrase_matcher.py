@@ -1,5 +1,6 @@
+import re
 from utils import get_text_from_file
-from rapidfuzz import process
+from rapidfuzz import process, fuzz
 from spacy.matcher import PhraseMatcher
 from spacy.tokens import Span, Doc
 from spacy.util import filter_spans
@@ -20,20 +21,47 @@ class EpofPhraseMatcher:
         self.matcher.add("epof_list", patterns)
 
     def __call__(self, doc: Doc) -> Doc:
-        # FIXME si el texto escrito no coincide 100% con lo de la lista_de_enfermedades => no hay matches
-        # ver https://github.com/jackmen/PhuzzyMatcher/blob/master/notebooks/fuzzy_phrase_matcher.ipynb
         matches = self.matcher(doc)
-
         new_ents = []
-        for match_id, start, end in matches:
-            print("Matched based on lowercase token text:", doc[start:end])
-            # extracted = process.extract(doc[start:end].text, lista_de_enfermedades)
-            # print(f"all: {extracted}")
-            # one_extracted = process.extractOne(doc[start:end].text, lista_de_enfermedades)
-            # print(f"one: {one_extracted}")
-            new_ents.append(Span(doc, start, end, label="EPOF"))
+
+        print(f"matches: {matches}")
+        # TODO qué pasa cuando no encuentra nada?
+
+        if len(matches):
+            match = matches[0]
+            print("Matched based on lowercase token text:", match[0], doc[match[-2] : match[-1]])
+            new_ents.append(Span(doc, match[-2], match[-1], label="EPOF"))
+        else:
+            tokens = [token.text for token in doc]
+            match = fuzzy_matcher(lista_de_enfermedades, tokens, 92)
+            print("Matched based on lowercase token text:", match[0], doc[match[-2] : match[-1] + 1])
+            new_ents.append(Span(doc, match[-2], match[-1] + 1, label="EPOF"))
+
+            # for match_id, epof, start, end in matches:
+            #   print("Matched based on lowercase token text:", doc[start:end+1])
+            #   new_ents.append(Span(doc, start, end+1, label="EPOF"))
 
         if new_ents:
             doc.ents = filter_spans(new_ents + list(doc.ents))
 
         return doc
+
+
+def fuzzy_matcher(features, tokens, match=None):
+    matches = []
+    for feature in features:
+        feature_length = len(feature.split(" "))
+        for i in range(len(tokens) - feature_length + 1):
+            matched_phrase = ""
+            j = 0
+            for j in range(i, i + feature_length):
+                if re.search(r"[,!?{}\[\]]", tokens[j]):
+                    break
+                matched_phrase = matched_phrase + " " + tokens[j].lower()
+            matched_phrase.strip()
+            if not matched_phrase == "":
+
+                if fuzz.ratio(matched_phrase, feature.lower()) > match:
+                    matches.append([matched_phrase, feature, i, j])
+
+    return matches[0]
