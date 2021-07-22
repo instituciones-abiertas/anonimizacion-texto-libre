@@ -183,7 +183,7 @@ def get_text_from_file(origin_path, file_name, column_to_use, include_titles):
         return columns
 
 
-def save_anonymized_file(origin_path, filename, doc, destination_folder, save_txt_file):
+def save_anonymized_file(origin_path, filename, doc, destination_folder, save_txt_file, include_title):
     """
     We copy the original csv file content and we add the anonymized texts in a new column added to the end.
     :param origin_path: Path to the file that has been anonymized.
@@ -205,9 +205,10 @@ def save_anonymized_file(origin_path, filename, doc, destination_folder, save_tx
                 reader = csv.reader(csvinput)
 
                 all = []
-                row = next(reader)
-                row.append("texto_anonimizado")
-                all.append(row)
+                if include_title:
+                    row = next(reader)
+                    row.append("texto_anonimizado")
+                    all.append(row)
 
                 for idx, row in enumerate(reader):
                     row.append(doc[idx])

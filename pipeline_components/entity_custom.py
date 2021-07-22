@@ -103,6 +103,7 @@ def is_between_tokens(token_id, left=0, right=0):
 
 is_from_first_tokens = partial(is_between_tokens, left=0, right=3)
 is_from_first_2_tokens = partial(is_between_tokens, left=0, right=2)
+is_from_first_token = partial(is_between_tokens, left=0, right=1)
 
 
 def get_aditional_left_tokens_for_address(ent):
@@ -284,7 +285,7 @@ def is_phone_token(token):
 
 def is_doctor(ent):
     first_token = ent[0]
-    return ent.label_ == "PER" and (
+    return (ent.label_ == "PER" or ent.label_ == "LOC") and (
         first_token.nbor(-1).lower_ in drx_nbor
         or first_token.nbor(-2).lower_ in drx_nbor
         or first_token.nbor(-3).lower_ in drx_nbor
@@ -332,7 +333,7 @@ def entity_custom(doc):
             add_span(token.i - 1, token.i + 1, "LOC")
         if not is_from_first_tokens(token.i) and is_phone_token(token):
             add_span(token.i - 1, token.i + 1, "NUM_TELÉFONO")
-        if not is_from_first_tokens(token.i) and is_doctor_token(token):
+        if not is_from_first_token(token.i) and is_doctor_token(token):
             left_extra_tokens = get_aditional_left_tokens_for_drx_token(token)
             add_span(token.i - left_extra_tokens, token.i + 1, "DRX")
         if not is_from_first_tokens(token.i) and is_address_token_from_number(token):
