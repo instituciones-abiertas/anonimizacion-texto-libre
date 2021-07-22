@@ -153,7 +153,7 @@ def evaluate_efficiency(
     )
     parser.add_argument(
         "--destination_folder",
-        help="Path where the comparison between the anonymization and the annotations will be saved. The file will be called results.csv.",
+        help="Path where the comparison between the anonymization and the annotations will be saved. The file will be called efficiency_results.csv.",
         type=str,
     )
     args = parser.parse_args()
@@ -174,7 +174,7 @@ def evaluate_efficiency(
             annotations = json.load(f)
 
         result = get_comparison_result(nlp, doc_text, annotations)
-        generate_csv_file(result, destination_folder, logger)
+        generate_csv_file(result, args.destination_folder, logger)
 
         print(f"Proceso terminado en {time() - start} segundos.")
         logger.info(f"Evaluación de eficiencia al anonimizar finalizada en {time() - start} segundos.")

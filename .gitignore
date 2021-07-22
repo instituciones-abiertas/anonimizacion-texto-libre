@@ -132,3 +132,5 @@ dmypy.json
 /*.csv
 /*.odt
 /results/*.csv
+/*.txt
+/*.json

@@ -8,6 +8,21 @@ from collections import defaultdict
 logger = logging.getLogger("CIECTI logger")
 
 
+ENTITIES_LIST = [
+    "PER",
+    "LOC",
+    "DIRECCIÓN",
+    "NUM_TELÉFONO",
+    "CORREO_ELECTRÓNICO",
+    "NUM_DNI",
+    "NUM_CUIT_CUIL",
+    "PASAPORTE",
+    "MATRICULA",
+    "EPOF",
+    "DRX",
+]
+
+
 class bcolors:
     HEADER = "\033[95m"
     OKBLUE = "\033[94m"
@@ -223,10 +238,10 @@ def generate_csv_file(result, destination_folder, logger):
     for item in result:
         rows.append(
             {
-                "entity": item.entity,
-                "model": item.model,
-                "expected": item.expected,
-                "efficiency": item.efficiency,
+                "Entidad": item.get("entity"),
+                "Modelo": item.get("model"),
+                "Esperado": item.get("expected"),
+                "Efectividad": item.get("efficiency"),
             }
         )
 
