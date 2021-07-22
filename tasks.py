@@ -12,6 +12,7 @@ from utils import (
     are_parameters_ok_to_anonymize,
     are_parameters_ok_to_evaluate_efficiency,
     get_text_from_file,
+    DEFAULT_EVALUATE_EFFICIENCY_FILE_NAME,
 )
 from model_utils import Nlp, get_comparison_result, anonymize_text
 
@@ -122,13 +123,15 @@ def evaluate_efficiency(
     json_origin_path=None,
     json_file_name=None,
     destination_folder=None,
+    results_file_name=None,
 ):
-    """
+    f"""
     :param origin_path: Path to the file to be anonymized on the way to evaluate efficiency.
     :param file_name: The filename from the file to be anonymized on the way to evaluate efficiency.
     :param json_origin_path: Path to the json file with the annotations from the document previously indicated.
     :param json_file_name: The filename from the json file with the annotations from the document previously indicated (MUST be json).
-    :param destination_folder: Path where the comparison between the anonymization and the annotations will be saved. The file will be called results.csv.
+    :param destination_folder: Path where the comparison between the anonymization and the annotations will be saved.
+    :param results_file_name: The file name where the comparison results will be added (it will be a csv file). Default file name: {DEFAULT_EVALUATE_EFFICIENCY_FILE_NAME}.
     :return: Notification when the process is finished.
     """
     parser = argparse.ArgumentParser()
@@ -153,7 +156,12 @@ def evaluate_efficiency(
     )
     parser.add_argument(
         "--destination_folder",
-        help="Path where the comparison between the anonymization and the annotations will be saved. The file will be called efficiency_results.csv.",
+        help="Path where the comparison between the anonymization and the annotations will be saved.",
+        type=str,
+    )
+    parser.add_argument(
+        "--results_file_name",
+        help="The file name where the comparison results will be added (it will be a csv file). Default file name: {DEFAULT_EVALUATE_EFFICIENCY_FILE_NAME}.",
         type=str,
     )
     args = parser.parse_args()
@@ -162,6 +170,11 @@ def evaluate_efficiency(
 
     if can_execute:
         start = time()
+        if not args.results_file_name:
+            print(
+                f"The comparison results will be saved in {args.destination_folder}/{DEFAULT_EVALUATE_EFFICIENCY_FILE_NAME}"
+            )
+
         logger.info(
             f"""Analizando el documento: {origin_path+"/"+file_name} junto al archivo de anotaciones: {json_origin_path+"/"+json_file_name}.
                         \nEl resultado del análisis se guardará en la carpeta: {destination_folder}."""
@@ -174,7 +187,7 @@ def evaluate_efficiency(
             annotations = json.load(f)
 
         result = get_comparison_result(nlp, doc_text, annotations)
-        generate_csv_file(result, args.destination_folder, logger)
+        generate_csv_file(result, args.destination_folder, args.results_file_name, logger)
 
         print(f"Proceso terminado en {time() - start} segundos.")
         logger.info(f"Evaluación de eficiencia al anonimizar finalizada en {time() - start} segundos.")

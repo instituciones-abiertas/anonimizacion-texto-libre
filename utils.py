@@ -7,6 +7,7 @@ from collections import defaultdict
 
 logger = logging.getLogger("CIECTI logger")
 
+DEFAULT_EVALUATE_EFFICIENCY_FILE_NAME = "evaluate_efficiency_results.csv"
 
 ENTITIES_LIST = [
     "PER",
@@ -217,9 +218,10 @@ def save_anonymized_file(origin_path, filename, doc, destination_folder, save_tx
     logger.info(f"Se guardó el archivo {file_name} en la carpeta {destination_folder}")
 
 
-def generate_csv_file(result, destination_folder, logger):
+def generate_csv_file(result, destination_folder, results_file_name, logger):
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    path = f"{dir_path}/{destination_folder}/results.csv"
+    results_file_name = results_file_name + ".csv" if results_file_name else DEFAULT_EVALUATE_EFFICIENCY_FILE_NAME
+    path = f"{dir_path}/{destination_folder}/{results_file_name}"
     check_dir(path)
     logger.info("\n\n")
     logger.info(f"💾 Guardando resultados de análisis en {path}")

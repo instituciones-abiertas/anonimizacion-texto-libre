@@ -99,7 +99,8 @@ def calculate_total(ents_list):
 def get_comparison_result(nlp, doc_text, annotations):
     # FIXME seria bueno usar anonymize_text porque considera las mayúsculas
     results = []
-    ents = nlp.generate_doc(doc_text).ents
+    doc = nlp.generate_doc(doc_text)
+    ents = doc.ents
 
     ents_list = [ent.label_ for ent in ents]
     ents_totals = calculate_total(ents_list)
