@@ -30,7 +30,7 @@ def show_menu():
             print("Debe ingresar una de las opciones listadas.")
             print_menu()
 
-        # TODO actualizar menú en base a parámetros que se agregaron
+        # TODO actualizar menú en base a parámetros que se agregaron, ver si cabe la posibilidad de que lo usen asi
         if int(user_input) == 1:
             origin_path = input(
                 "Ingrese el path completo (nombre del archivo incluido) del documento a anonimizar y presione la tecla enter: \n"

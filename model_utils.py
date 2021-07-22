@@ -5,6 +5,7 @@ from spacy.tokens import Span
 from spacy.language import Language
 from pipeline_components.entity_ruler import ruler_patterns
 from pipeline_components.entity_custom import entity_custom
+from pipeline_components.epof_phrase_matcher import EpofPhraseMatcher
 
 EXCLUDED_ENTS = ["MISC", "ORG"]
 
@@ -19,6 +20,7 @@ class Nlp:
         ruler = self.nlp.add_pipe("entity_ruler", config={"overwrite_ents": True})
         ruler.add_patterns(ruler_patterns)
 
+        self.nlp.add_pipe("epof_phrase_matcher")
         self.nlp.add_pipe("entity_custom")
 
     def generate_doc(self, text):
@@ -81,6 +83,7 @@ def replace_tokens_with_labels(doc, color_entities):
 
 def anonymize_text(nlp, text, color_entities):
     doc = nlp.generate_doc(text)
+    # FIXME no detecta algunas cosas en mayusculas, ver feedback
     # found_texts = find_ent_ocurrencies_in_upper_text(doc.text, doc.ents)
 
     anonymized_text = replace_tokens_with_labels(doc, color_entities)
