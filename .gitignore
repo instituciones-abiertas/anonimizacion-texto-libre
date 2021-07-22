@@ -128,9 +128,6 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# files
-/*.csv
-/*.odt
-/results/*.csv
-/*.txt
-/*.json
+# testing files
+/results
+/testing_data
