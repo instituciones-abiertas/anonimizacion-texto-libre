@@ -104,7 +104,7 @@ def get_comparison_result(nlp, doc_text, annotations):
     ents_list = [ent.label_ for ent in ents]
     ents_totals = calculate_total(ents_list)
 
-    ents_list = [annot["entidad"] for annot in annotations]
+    ents_list = [annot["entity"] for annot in annotations]
     annotations_totals = calculate_total(ents_list)
 
     for ent in ENTITIES_LIST:
