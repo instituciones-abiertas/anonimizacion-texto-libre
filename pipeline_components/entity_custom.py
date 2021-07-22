@@ -284,7 +284,7 @@ def is_phone_token(token):
 
 def is_doctor(ent):
     first_token = ent[0]
-    return ent.label_ == "PER" and (
+    return (ent.label_ == "PER" or ent.label_ == "LOC") and (
         first_token.nbor(-1).lower_ in drx_nbor
         or first_token.nbor(-2).lower_ in drx_nbor
         or first_token.nbor(-3).lower_ in drx_nbor
