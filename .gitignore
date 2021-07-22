@@ -129,6 +129,5 @@ dmypy.json
 .pyre/
 
 # files
-/*.csv
-/*.odt
+/testing_data
 /results/*.csv
