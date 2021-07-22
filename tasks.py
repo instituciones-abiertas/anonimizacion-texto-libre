@@ -127,7 +127,7 @@ def evaluate_efficiency(
 ):
     f"""
     :param origin_path: Path to the file to be anonymized on the way to evaluate efficiency.
-    :param file_name: The filename from the file to be anonymized on the way to evaluate efficiency.
+    :param file_name: The filename from the file to be anonymized on the way to evaluate efficiency (MUST be txt).
     :param json_origin_path: Path to the json file with the annotations from the document previously indicated.
     :param json_file_name: The filename from the json file with the annotations from the document previously indicated (MUST be json).
     :param destination_folder: Path where the comparison between the anonymization and the annotations will be saved.
