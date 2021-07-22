@@ -283,23 +283,41 @@ def is_phone_token(token):
     )
 
 
+def get_left_lower_nbor_in_pos(token, pos, in_list):
+    try:
+        return token.nbor(pos).lower_ in in_list
+    except Exception:
+        return False
+
+
+def get_left_lower_2_nbor_in_pos(token, pos_1, pos_2, in_list):
+    try:
+        return f"{token.nbor(pos_1).lower_} {token.nbor(pos_2).lower_}" in in_list
+    except Exception:
+        return False
+
+
 def is_doctor(ent):
     first_token = ent[0]
     return (ent.label_ == "PER" or ent.label_ == "LOC") and (
         first_token.nbor(-1).lower_ in drx_nbor
-        or first_token.nbor(-2).lower_ in drx_nbor
-        or first_token.nbor(-3).lower_ in drx_nbor
-        or f"{first_token.nbor(-2).lower_} {first_token.nbor(-1).lower_}" in drx_nbor_2_tokens
-        or f"{first_token.nbor(-3).lower_} {first_token.nbor(-2).lower_}" in drx_nbor_2_tokens
+        or get_left_lower_nbor_in_pos(first_token, -2, drx_nbor)
+        or get_left_lower_nbor_in_pos(first_token, -3, drx_nbor)
+        or get_left_lower_2_nbor_in_pos(first_token, -2, -1, drx_nbor_2_tokens)
+        or get_left_lower_2_nbor_in_pos(first_token, -3, -2, drx_nbor_2_tokens)
     )
 
 
 def is_doctor_token(token):
+    second_nbor_left_is_drx = get_left_lower_nbor_in_pos(token, -2, drx_nbor)
+    second_nbors_left_is_drx = get_left_lower_2_nbor_in_pos(token, -2, -1, drx_nbor_2_tokens)
+    third_nbors_left_is_drx = get_left_lower_2_nbor_in_pos(token, -3, -2, drx_nbor_2_tokens)
+
     return token.is_title and (
         token.nbor(-1).lower_ in drx_nbor
-        or token.nbor(-2).lower_ in drx_nbor
-        or f"{token.nbor(-2).lower_} {token.nbor(-1).lower_}" in drx_nbor_2_tokens
-        or f"{token.nbor(-3).lower_} {token.nbor(-2).lower_}" in drx_nbor_2_tokens
+        or second_nbor_left_is_drx
+        or second_nbors_left_is_drx
+        or third_nbors_left_is_drx
     )
 
 
