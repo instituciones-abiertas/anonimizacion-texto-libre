@@ -88,6 +88,7 @@ def anonymize_doc(
                 anonymized_docs,
                 args.destination_folder,
                 True if args.text else False,
+                args.include_titles,
             )
         elif type(anonymized_docs) == list:
             print(
