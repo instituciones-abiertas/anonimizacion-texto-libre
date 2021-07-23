@@ -3,9 +3,19 @@ import sys
 import csv
 import logging
 from collections import defaultdict
+from configuration import (
+    LOGGER_NAME,
+    EPOF_FOLDER,
+    EPOF_FILE_NAME,
+    EPOF_COLUMN_TO_USE,
+    EPOF_INCLUDE_TITLES,
+    MATRICULAS_FOLDER,
+    MATRICULAS_FILE_NAME,
+    MATRICULAS_COLUMN_TO_USE,
+    MATRICULAS_INCLUDE_TITLES,
+)
 
-
-logger = logging.getLogger("CIECTI logger")
+logger = logging.getLogger(LOGGER_NAME)
 
 
 class bcolors:
@@ -28,7 +38,7 @@ def check_dir(file_name):
 
 
 def create_logger():
-    logger = logging.getLogger("CIECTI logger")
+    logger = logging.getLogger(LOGGER_NAME)
     logger.setLevel(logging.DEBUG)
     log_path = "logs/debug.log"
     check_dir(log_path)
@@ -113,6 +123,16 @@ def get_text_from_file(origin_path, file_name, column_to_use, include_titles):
             columns.append(only_included_cols)
 
         return columns
+
+
+def get_epof():
+    return get_text_from_file(EPOF_FOLDER, EPOF_FILE_NAME, EPOF_COLUMN_TO_USE, EPOF_INCLUDE_TITLES)
+
+
+def get_matriculas_nbors():
+    return get_text_from_file(
+        MATRICULAS_FOLDER, MATRICULAS_FILE_NAME, MATRICULAS_COLUMN_TO_USE, MATRICULAS_INCLUDE_TITLES
+    )
 
 
 def save_anonymized_file(origin_path, filename, doc, destination_folder, save_txt_file, include_title):

@@ -12,10 +12,10 @@ from utils import (
     get_text_from_file,
 )
 from model_utils import Nlp, get_comparison_result, anonymize_text
+from configuration import DEFAULT_ANONYMIZED_FILE_NAME, MODEL_NAME
+
 
 logger = create_logger()
-DEFAULT_FILE_NAME = "texto_anonimizado.txt"
-MODEL_NAME = "es_core_news_lg"  # Sólo detecta: LOC, MISC, ORG, PER
 
 
 def anonymize_doc(
@@ -84,7 +84,7 @@ def anonymize_doc(
         if args.save_file:
             save_anonymized_file(
                 args.origin_path,
-                args.file_name or DEFAULT_FILE_NAME,
+                args.file_name or DEFAULT_ANONYMIZED_FILE_NAME,
                 anonymized_docs,
                 args.destination_folder,
                 True if args.text else False,

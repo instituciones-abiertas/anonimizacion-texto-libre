@@ -6,8 +6,7 @@ from spacy.language import Language
 from pipeline_components.entity_ruler import ruler_patterns
 from pipeline_components.entity_custom import entity_custom
 from pipeline_components.epof_phrase_matcher import EpofPhraseMatcher
-
-EXCLUDED_ENTS = ["MISC", "ORG"]
+from configuration import EXCLUDED_ENTS
 
 
 class Nlp:

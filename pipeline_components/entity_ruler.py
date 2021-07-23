@@ -1,7 +1,7 @@
-from utils import get_text_from_file
+from utils import get_epof, get_matriculas_nbors
 
-lista_de_enfermedades = get_text_from_file("./data/", "epof.csv", 0, False)
-matriculas = get_text_from_file("./data/", "matriculas.csv", 0, False)
+lista_de_enfermedades = get_epof()
+matriculas = get_matriculas_nbors()
 
 dni = [
     {"label": "NUM_DNI", "pattern": [{"SHAPE": "d.ddd.ddd"}]},
