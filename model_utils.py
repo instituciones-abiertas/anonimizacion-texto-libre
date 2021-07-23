@@ -6,7 +6,8 @@ from spacy.language import Language
 from pipeline_components.entity_ruler import ruler_patterns
 from pipeline_components.entity_custom import entity_custom
 from pipeline_components.epof_phrase_matcher import EpofPhraseMatcher
-from configuration import EXCLUDED_ENTS
+from configuration import EXCLUDED_ENTS, ENTITIES_LIST
+from collections import Counter
 
 
 class Nlp:
@@ -82,16 +83,44 @@ def replace_tokens_with_labels(doc, color_entities):
 
 def anonymize_text(nlp, text, color_entities):
     doc = nlp.generate_doc(text)
-    # FIXME no detecta algunas cosas en mayusculas, ver feedback
+    # FIXME no detecta algunas cosas en mayusculas, agregarlo a la clase NLP?
     # found_texts = find_ent_ocurrencies_in_upper_text(doc.text, doc.ents)
 
     anonymized_text = replace_tokens_with_labels(doc, color_entities)
     return anonymized_text
 
 
+def calculate_total(ents_list):
+    c = [ents_list.count(x) for x in ents_list]
+    return dict(zip(ents_list, c))
+
+
 def get_comparison_result(nlp, doc_text, annotations):
-    doc = nlp(doc_text)
+    # FIXME seria bueno usar anonymize_text porque considera las mayúsculas
+    results = []
+    doc = nlp.generate_doc(doc_text)
     ents = doc.ents
-    print(ents)
-    # ver lo que está  hecho en https://recursos.camba.coop/llave-en-mano/ia2/ia2-server/blob/develop/apps/entity/management/commands/stats.py
-    return []
+
+    ents_list = [ent.label_ for ent in ents]
+    ents_totals = calculate_total(ents_list)
+
+    ents_list = [annot["entity"] for annot in annotations]
+    annotations_totals = calculate_total(ents_list)
+
+    for ent in ENTITIES_LIST:
+        ent_total = ents_totals.get(ent) if ents_totals.get(ent) else 0
+        annotation_total = annotations_totals.get(ent) if annotations_totals.get(ent) else 0
+        if ent_total and annotation_total:
+            efficiency = ent_total / annotation_total * 100
+        else:
+            efficiency = 100 if ent_total > annotation_total else 0
+
+        results.append(
+            {
+                "entity": ent,
+                "model": ent_total,
+                "expected": annotation_total,
+                "efficiency": efficiency,
+            }
+        )
+    return results

@@ -338,24 +338,6 @@ def is_matricula(token):
     )
 
 
-# def is_epof(token):
-#     if not token.is_stop and len(token.text) > 2:
-#         # any_part_is_epof = any([enfermedad for enfermedad in lista_de_enfermedades if token.lower_ in enfermedad.lower().split()])
-#         found_epof = [enfermedad for enfermedad in lista_de_enfermedades if token.lower_ in enfermedad.lower().split()]
-#         if len(found_epof):
-#             print(f"\ntoken: {token.lower_} - found: {found_epof}")
-#             # import pdb; pdb.set_trace()
-#             #TODO deberia chequear si es alguna de las que encontró en base a la posición del token en las epof encontradas
-
-#         return (
-#                 token.lower_ in lista_de_enfermedades
-#                 or token.nbor(-1).lower_ in lista_de_enfermedades
-#                 or token.nbor(-2).lower_ in lista_de_enfermedades
-#                 or token.nbor(-3).lower_ in lista_de_enfermedades
-#             )
-#     return False
-
-
 @Language.component("entity_custom")
 def entity_custom(doc):
     new_ents = []
@@ -377,9 +359,6 @@ def entity_custom(doc):
             add_span(token.i - left_extra_tokens, token.i + 1, "DIRECCION")
         if not is_from_first_tokens(token.i) and is_matricula(token):
             add_span(token.i - 1, token.i + 1, "MATRICULA")
-        # if not is_from_first_tokens(token.i) and is_epof(token):
-        #     print(f"is_epof token: {token}")
-        #     add_span(token.i - 1, token.i + 1, "EPOF")
 
     # print(f"\ndoc.ents: {doc.ents}")
     for i, ent in enumerate(doc.ents):
