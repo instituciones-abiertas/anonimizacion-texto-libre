@@ -7,6 +7,22 @@ from collections import defaultdict
 
 logger = logging.getLogger("CIECTI logger")
 
+DEFAULT_EVALUATE_EFFICIENCY_FILE_NAME = "evaluate_efficiency_results.csv"
+
+ENTITIES_LIST = [
+    "PER",
+    "LOC",
+    "DIRECCIÓN",
+    "NUM_TELÉFONO",
+    "CORREO_ELECTRÓNICO",
+    "NUM_DNI",
+    "NUM_CUIT_CUIL",
+    "PASAPORTE",
+    "MATRICULA",
+    "EPOF",
+    "DRX",
+]
+
 
 class bcolors:
     HEADER = "\033[95m"
@@ -94,6 +110,58 @@ def are_parameters_ok_to_anonymize(args):
     return True
 
 
+def are_parameters_ok_to_evaluate_efficiency(args):
+    if not args.origin_path or not os.path.isdir(args.origin_path):
+        print(
+            "No has definido la ubicación del archivo a utilizar para evaluar la eficiencia del modelo"
+            + bcolors.WARNING
+            + "(falta el parámetro '--origin_path')"
+            + bcolors.ENDC
+            + " o la carpeta origen no existe."
+        )
+        return False
+
+    if not args.file_name:
+        print(
+            "No has definido el nombre del archivo a utilizar para evaluar la eficiencia del modelo"
+            + bcolors.WARNING
+            + "(falta el parámetro '--file_name')"
+            + bcolors.ENDC
+        )
+        return False
+
+    if not args.json_origin_path or not os.path.isdir(args.json_origin_path):
+        print(
+            "No has definido la ubicación del archivo json con las anotaciones a utilizar para evaluar la eficiencia del modelo"
+            + bcolors.WARNING
+            + "(falta el parámetro '--json_origin_path')"
+            + bcolors.ENDC
+            + " o la carpeta origen no existe."
+        )
+        return False
+
+    if not args.json_file_name or "json" not in args.json_file_name:
+        print(
+            "No has definido el nombre del archivo json con las anotaciones a utilizar para evaluar la eficiencia del modelo o NO es un archivo json"
+            + bcolors.WARNING
+            + "(falta el parámetro '--json_file_name')"
+            + bcolors.ENDC
+        )
+        return False
+
+    if not args.destination_folder or not os.path.isdir(args.destination_folder):
+        print(
+            "No has definido la ubicación de destino "
+            + bcolors.WARNING
+            + "(falta el parámetro '--destination_folder')"
+            + bcolors.ENDC
+            + " para el documento anonimizado o la carpeta destino no existe."
+        )
+        return False
+
+    return True
+
+
 def get_text_from_file(origin_path, file_name, column_to_use, include_titles):
     """
     :param origin_path: Path to the file to be used.
@@ -151,9 +219,10 @@ def save_anonymized_file(origin_path, filename, doc, destination_folder, save_tx
     logger.info(f"Se guardó el archivo {file_name} en la carpeta {destination_folder}")
 
 
-def generate_csv_file(result, destination_folder, logger):
+def generate_csv_file(result, destination_folder, results_file_name, logger):
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    path = f"{dir_path}/{destination_folder}/results.csv"
+    results_file_name = results_file_name + ".csv" if results_file_name else DEFAULT_EVALUATE_EFFICIENCY_FILE_NAME
+    path = f"{dir_path}/{destination_folder}/{results_file_name}"
     check_dir(path)
     logger.info("\n\n")
     logger.info(f"💾 Guardando resultados de análisis en {path}")
@@ -172,10 +241,10 @@ def generate_csv_file(result, destination_folder, logger):
     for item in result:
         rows.append(
             {
-                "entity": item.entity,
-                "model": item.model,
-                "expected": item.expected,
-                "efficiency": item.efficiency,
+                "Entidad": item.get("entity"),
+                "Modelo": item.get("model"),
+                "Esperado": item.get("expected"),
+                "Efectividad": item.get("efficiency"),
             }
         )
 
