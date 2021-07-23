@@ -1,12 +1,12 @@
-from utils import get_text_from_file
+from utils import get_epof, get_matriculas_nbors
 from spacy.tokens import Span
 from spacy.util import filter_spans
 from spacy.language import Language
 from functools import partial
 
 
-lista_de_enfermedades = get_text_from_file("./data/", "epof.csv", 0, False)
-matriculas = get_text_from_file("./data/", "matriculas.csv", 0, False)
+lista_de_enfermedades = get_epof()
+matriculas = get_matriculas_nbors()
 
 address_first_left_nbors = [
     "calle",

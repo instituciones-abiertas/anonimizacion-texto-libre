@@ -15,13 +15,13 @@
 
         pip install -r requirements.txt
 
-4. Download a spanish base model
+4. Download a spanish base model (we recommend the large one)
 
         python -m spacy download es_core_news_lg
 
 5. For every anonymization you make, you will find information in a log file located in the folder `logs`.
 
-
+6. There's a configuration file called `configuration.py` where you can find variables that are used in the code and you can modify.
 ## Main functions
 
 ## `anonymize_doc()`

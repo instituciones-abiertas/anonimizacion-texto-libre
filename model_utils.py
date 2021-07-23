@@ -1,14 +1,13 @@
 import spacy
 import re
-from utils import bcolors, ENTITIES_LIST
+from utils import bcolors
 from spacy.tokens import Span
 from spacy.language import Language
 from pipeline_components.entity_ruler import ruler_patterns
 from pipeline_components.entity_custom import entity_custom
 from pipeline_components.epof_phrase_matcher import EpofPhraseMatcher
+from configuration import EXCLUDED_ENTS, ENTITIES_LIST
 from collections import Counter
-
-EXCLUDED_ENTS = ["MISC", "ORG"]
 
 
 class Nlp:

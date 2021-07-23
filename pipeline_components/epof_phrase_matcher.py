@@ -1,13 +1,13 @@
 import re
-from utils import get_text_from_file
+from utils import get_epof
+from configuration import MATCH_PERCENTAGE
 from rapidfuzz import fuzz
 from spacy.matcher import PhraseMatcher
 from spacy.tokens import Span, Doc
 from spacy.util import filter_spans
 from spacy.language import Language
 
-lista_de_enfermedades = get_text_from_file("./data/", "epof.csv", 0, False)
-MATCH_PERCENTAGE = 92  # when finding matches for epof, it will keep matches over this percentage  of matching
+lista_de_enfermedades = get_epof()
 
 
 @Language.factory("epof_phrase_matcher")
