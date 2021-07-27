@@ -30,7 +30,10 @@ class EpofPhraseMatcher:
             start = match[-2]
             end = match[-1]
         else:
-            # using FuzzyWuzzy to find matches
+            # using RapidFuzz to find matches when there were NO "perfect matches" due to typos or abreviations
+            # consider that MATCH_PERCENTAGE is the percentage from the one you will keep matches between
+            # what is written in the text and the list of EPoFs
+            # higher the percentage, lower the differences "tolerated" to find a match
             tokens = [token.text for token in doc]
             match = fuzzy_matcher(lista_de_enfermedades, tokens, MATCH_PERCENTAGE)
             if match:
