@@ -160,13 +160,19 @@ def get_aditional_left_tokens_for_address_token(token):
         token, -2, address_second_left_nbors
     ):
         return 2
+
     if is_token_in_x_left_lowers(token, -3, address_first_left_nbors):
         return 3
-    if is_token_in_x_left_lowers(token, -3, address_second_left_nbors):
+    if is_token_in_x_left_lowers(token, -3, address_second_left_nbors) or is_token_in_x_left_lemma(
+        token, -3, place_second_left_nbors
+    ):
         return 2 - 1 if token.nbor(-2).lower_ == address_connector else 0
+
     if is_token_in_x_left_lowers(token, -4, address_first_left_nbors):
         return 4
-    if is_token_in_x_left_lowers(token, -4, address_second_left_nbors):
+    if is_token_in_x_left_lowers(token, -4, address_second_left_nbors) or is_token_in_x_left_lemma(
+        token, -4, place_second_left_nbors
+    ):
         return 3 - 1 if token.nbor(-3).lower_ == address_connector else 0
     return 0
 
@@ -224,13 +230,13 @@ def generate_drx_span(ent, new_ents, doc):
 def is_address(ent):
     first_token = ent[0]
     last_token = ent[-1]
-    address_1_tokens_to_left = is_token_in_x_left_lowers(first_token, 1, address_first_left_nbors)
-    address_2_tokens_to_left_first_nbors = is_token_in_x_left_lowers(first_token, 2, address_first_left_nbors)
-    address_2_tokens_to_left_second_nbors = is_token_in_x_left_lowers(first_token, 2, address_second_left_nbors)
-    address_3_tokens_to_left_first_nbors = is_token_in_x_left_lowers(first_token, 3, address_first_left_nbors)
-    address_3_tokens_to_left_second_nbors = is_token_in_x_left_lowers(first_token, 3, address_second_left_nbors)
-    address_4_tokens_to_left_first_nbors = is_token_in_x_left_lowers(first_token, 4, address_first_left_nbors)
-    address_4_tokens_to_left_second_nbors = is_token_in_x_left_lowers(first_token, 4, address_second_left_nbors)
+    address_1_tokens_to_left = is_token_in_x_left_lowers(first_token, -1, address_first_left_nbors)
+    address_2_tokens_to_left_first_nbors = is_token_in_x_left_lowers(first_token, -2, address_first_left_nbors)
+    address_2_tokens_to_left_second_nbors = is_token_in_x_left_lowers(first_token, -2, address_second_left_nbors)
+    address_3_tokens_to_left_first_nbors = is_token_in_x_left_lowers(first_token, -3, address_first_left_nbors)
+    address_3_tokens_to_left_second_nbors = is_token_in_x_left_lowers(first_token, -3, address_second_left_nbors)
+    address_4_tokens_to_left_first_nbors = is_token_in_x_left_lowers(first_token, -4, address_first_left_nbors)
+    address_4_tokens_to_left_second_nbors = is_token_in_x_left_lowers(first_token, -4, address_second_left_nbors)
 
     is_address_from_PER = ent.label_ in ["PER"] and (
         address_1_tokens_to_left or address_2_tokens_to_left_second_nbors or last_token.like_num
@@ -251,13 +257,15 @@ def is_address(ent):
 
 def is_address_token_from_number(token):
     if token.like_num:
-        address_1_tokens_to_left = is_token_in_x_left_lowers(token, 1, address_first_left_nbors)
-        address_2_tokens_to_left_first_nbors = is_token_in_x_left_lowers(token, 2, address_first_left_nbors)
-        address_2_tokens_to_left_second_nbors = is_token_in_x_left_lowers(token, 2, address_second_left_nbors)
-        address_3_tokens_to_left_first_nbors = is_token_in_x_left_lowers(token, 3, address_first_left_nbors)
-        address_3_tokens_to_left_second_nbors = is_token_in_x_left_lowers(token, 3, address_second_left_nbors)
-        address_4_tokens_to_left_first_nbors = is_token_in_x_left_lowers(token, 4, address_first_left_nbors)
-        address_4_tokens_to_left_second_nbors = is_token_in_x_left_lowers(token, 4, address_second_left_nbors)
+        address_1_tokens_to_left = is_token_in_x_left_lowers(token, -1, address_first_left_nbors)
+        address_2_tokens_to_left_first_nbors = is_token_in_x_left_lowers(token, -2, address_first_left_nbors)
+        address_2_tokens_to_left_second_nbors = is_token_in_x_left_lowers(token, -2, address_second_left_nbors)
+        address_3_tokens_to_left_first_nbors = is_token_in_x_left_lowers(token, -3, address_first_left_nbors)
+        address_3_tokens_to_left_second_nbors = is_token_in_x_left_lowers(token, -3, address_second_left_nbors)
+        address_4_tokens_to_left_first_nbors = is_token_in_x_left_lowers(token, -4, address_first_left_nbors)
+        address_4_tokens_to_left_second_nbors = is_token_in_x_left_lowers(token, -4, address_second_left_nbors)
+        address_3_tokens_to_left_lemma = is_token_in_x_left_lemma(token, -3, place_second_left_nbors)
+        address_4_tokens_to_left_lemma = is_token_in_x_left_lemma(token, -4, place_second_left_nbors)
 
         return (
             address_1_tokens_to_left
@@ -265,17 +273,22 @@ def is_address_token_from_number(token):
             or address_2_tokens_to_left_second_nbors
             or address_3_tokens_to_left_first_nbors
             or address_3_tokens_to_left_second_nbors
+            or address_3_tokens_to_left_lemma
             or address_4_tokens_to_left_first_nbors
             or address_4_tokens_to_left_second_nbors
+            or address_4_tokens_to_left_lemma
         )
 
 
 def is_place_token(token):
-    # Este enfoque puede generar falsos positivos, tener cuidado con las palabras que se usan
-    return (is_token_in_x_left_lowers(token, -1, place_first_left_nbors) and not token.is_stop) or (
-        is_token_in_x_left_lowers(token, -2, address_second_left_nbors)
-        or is_token_in_x_left_lemma(token, -2, place_second_left_nbors)
-        and not token.is_stop
+    # This approach can generate false positives, be careful with the words used.
+    return token.is_title and (
+        (is_token_in_x_left_lowers(token, -1, place_first_left_nbors) and not token.is_stop)
+        or (
+            is_token_in_x_left_lowers(token, -2, address_second_left_nbors)
+            or is_token_in_x_left_lemma(token, -2, place_second_left_nbors)
+            and not token.is_stop
+        )
     )
 
 
