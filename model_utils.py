@@ -24,6 +24,8 @@ class Nlp:
         self.nlp.add_pipe("epof_phrase_matcher")
         self.nlp.add_pipe("entity_custom")
 
+        self.nlp.add_pipe("check_uppercase_ent", last=True)
+
     def generate_doc(self, text):
         return self.nlp(text)
 
@@ -55,11 +57,21 @@ def check_misc_and_org(doc):
     return doc
 
 
+@Language.component("check_uppercase_ent")
+def check_entities_in_uppercase_text(doc):
+    lents = list(doc.ents)
+    new_uppercase_ents = get_entities_in_uppercase_text(doc, doc.text, doc.ents)
+    for uppercase_ent in new_uppercase_ents:
+        new_ent = Span(doc, uppercase_ent.start, uppercase_ent.end, uppercase_ent.label_)
+        lents.append(new_ent)
+    lents = tuple(lents)
+    doc.ents = lents
+    return doc
+
+
 def replace_tokens_with_labels(doc, color_entities):
     anonymized_text = doc.text
-    print(doc.ents)
-    ents = list(format_spans(doc.ents))
-    print(ents)
+    ents = list((doc.ents))
     filtered_ents = [ent for ent in ents if ent.label_ not in EXCLUDED_ENTS]
     for ent in filtered_ents:
         # print(f"se va a reemplazar ent.text: {ent.text} - {ent.label_}")
@@ -72,20 +84,7 @@ def replace_tokens_with_labels(doc, color_entities):
     return anonymized_text
 
 
-## Funciones para la busqueda de entidades en mayusculas
-
-
-def format_span(span):
-    new_ordered_dict = collections.OrderedDict()
-    new_ordered_dict["start"] = span.start_char
-    new_ordered_dict["end"] = span.end_char
-    new_ordered_dict["tag"] = span.label_
-    return new_ordered_dict
-
-
-def format_spans(span_list):
-    # retorna una lista de OrderedDict
-    return list(map(format_span, span_list))
+### Auxiliary functions for capitalized text search
 
 
 def overlap_ocurrency(ent_start, ent_end, ocurrency, use_index):
@@ -112,7 +111,6 @@ def find_ent_ocurrencies_in_upper_text(text, ents):
         filtered_ents = list(filter(lambda ent: ent.text.lower() in ex_cap_text, ents))
         for ent in filtered_ents:
             found_texts.append({"text": ent.text, "entity_name": ent.label_})
-    print(f"Encontre entidades en la mayusculas{found_texts}")
     return found_texts
 
 
@@ -121,23 +119,18 @@ def get_entities_in_uppercase_text(doc, text, ents):
     found_texts = find_ent_ocurrencies_in_upper_text(text, ents)
     for element in found_texts:
         found_text, entity_name = element.values()
-        for match in re.finditer(found_text, text):
-            print(f"El match {match}")
+        for match in re.finditer(found_text, text, flags=re.IGNORECASE):
             new_span = doc.char_span(match.span()[0], match.span()[1], entity_name)
             if new_span and not overlap_ocurrency_list(new_span.start, new_span.end, ents, False):
                 result.append(new_span)
-    print(f"El resultado es {result}")
-    print(f"El resultado es  de tipo{type(result)}")
     return result
+
+
+####
 
 
 def anonymize_text(nlp, text, color_entities):
     doc = nlp.generate_doc(text)
-    # FIXME no detecta algunas cosas en mayusculas, agregarlo a la clase NLP?
-    uppercase_ents = get_entities_in_uppercase_text(doc, doc.text, doc.ents)
-    if uppercase_ents:
-        doc.ents = doc.ents.extend(filter_spans(uppercase_ents))
-
     anonymized_text = replace_tokens_with_labels(doc, color_entities)
     return anonymized_text
 
