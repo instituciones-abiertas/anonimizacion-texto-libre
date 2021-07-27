@@ -1,4 +1,5 @@
 import spacy
+from spacy.util import filter_spans
 import re
 from utils import bcolors
 from spacy.tokens import Span
@@ -7,7 +8,7 @@ from pipeline_components.entity_ruler import ruler_patterns
 from pipeline_components.entity_custom import entity_custom
 from pipeline_components.epof_phrase_matcher import EpofPhraseMatcher
 from configuration import EXCLUDED_ENTS, ENTITIES_LIST
-from collections import Counter
+import collections
 
 
 class Nlp:
@@ -22,6 +23,8 @@ class Nlp:
 
         self.nlp.add_pipe("epof_phrase_matcher")
         self.nlp.add_pipe("entity_custom")
+
+        self.nlp.add_pipe("check_uppercase_ent", last=True)
 
     def generate_doc(self, text):
         return self.nlp(text)
@@ -54,9 +57,21 @@ def check_misc_and_org(doc):
     return doc
 
 
+@Language.component("check_uppercase_ent")
+def check_entities_in_uppercase_text(doc):
+    lents = list(doc.ents)
+    new_uppercase_ents = get_entities_in_uppercase_text(doc, doc.text, doc.ents)
+    for uppercase_ent in new_uppercase_ents:
+        new_ent = Span(doc, uppercase_ent.start, uppercase_ent.end, uppercase_ent.label_)
+        lents.append(new_ent)
+    lents = tuple(lents)
+    doc.ents = lents
+    return doc
+
+
 def replace_tokens_with_labels(doc, color_entities):
     anonymized_text = doc.text
-    ents = list(doc.ents)
+    ents = list((doc.ents))
     filtered_ents = [ent for ent in ents if ent.label_ not in EXCLUDED_ENTS]
     for ent in filtered_ents:
         # print(f"se va a reemplazar ent.text: {ent.text} - {ent.label_}")
@@ -69,23 +84,53 @@ def replace_tokens_with_labels(doc, color_entities):
     return anonymized_text
 
 
-# def find_ent_ocurrencies_in_upper_text(text, ents):
-#     found_texts = []
-#     upper_pattern = ["[A-ZÀ-ÿ][A-ZÀ-ÿ]+"]
-#     for pattern in upper_pattern:
-#         match = re.findall(pattern, text)
-#         ex_cap_text = " ".join(x.lower() for x in match)
-#         filtered_ents = list(filter(lambda ent: ent.text.lower() in ex_cap_text, ents))
-#         for ent in filtered_ents:
-#             found_texts.append({"text": ent.text, "entity_name": ent.label_})
-#     return found_texts
+### Auxiliary functions for capitalized text search
+
+
+def overlap_ocurrency(ent_start, ent_end, ocurrency, use_index):
+    ocurrency_start = ocurrency.startIndex if use_index else ocurrency.start
+    ocurrency_end = ocurrency.endIndex if use_index else ocurrency.end
+    return (
+        (ent_start >= ocurrency_start and ent_end <= ocurrency_end)
+        or (ent_start <= ocurrency_end and ent_end >= ocurrency_end)
+        or (ent_start >= ocurrency_start)
+        and (ent_end <= ocurrency_end)
+    )
+
+
+def overlap_ocurrency_list(ent_start, ent_end, original_ocurrency_list, use_index=True):
+    return any(overlap_ocurrency(ent_start, ent_end, ocurrency, use_index) for ocurrency in original_ocurrency_list)
+
+
+def find_ent_ocurrencies_in_upper_text(text, ents):
+    found_texts = []
+    upper_pattern = [r"[A-ZÀ-ÿ][A-ZÀ-ÿ]+\.*"]
+    for pattern in upper_pattern:
+        match = re.findall(pattern, text)
+        ex_cap_text = " ".join(x.lower() for x in match)
+        filtered_ents = list(filter(lambda ent: ent.text.lower() in ex_cap_text, ents))
+        for ent in filtered_ents:
+            found_texts.append({"text": ent.text, "entity_name": ent.label_})
+    return found_texts
+
+
+def get_entities_in_uppercase_text(doc, text, ents):
+    result = []
+    found_texts = find_ent_ocurrencies_in_upper_text(text, ents)
+    for element in found_texts:
+        found_text, entity_name = element.values()
+        for match in re.finditer(found_text, text, flags=re.IGNORECASE):
+            new_span = doc.char_span(match.span()[0], match.span()[1], entity_name)
+            if new_span and not overlap_ocurrency_list(new_span.start, new_span.end, ents, False):
+                result.append(new_span)
+    return result
+
+
+####
 
 
 def anonymize_text(nlp, text, color_entities):
     doc = nlp.generate_doc(text)
-    # FIXME no detecta algunas cosas en mayusculas, agregarlo a la clase NLP?
-    # found_texts = find_ent_ocurrencies_in_upper_text(doc.text, doc.ents)
-
     anonymized_text = replace_tokens_with_labels(doc, color_entities)
     return anonymized_text
 
