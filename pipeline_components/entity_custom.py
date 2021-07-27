@@ -122,12 +122,6 @@ def is_between_tokens(token_id, left=0, right=0):
     return token_id < right and token_id >= left
 
 
-# TODO necesitamos estas funciones?
-is_from_first_tokens = partial(is_between_tokens, left=0, right=3)
-is_from_first_2_tokens = partial(is_between_tokens, left=0, right=2)
-is_from_first_token = partial(is_between_tokens, left=0, right=1)
-
-
 def get_aditional_left_tokens_for_address(ent):
     if ent.label_ in ["PER"] and ent[-1].nbor().like_num:
         return 1
@@ -345,7 +339,7 @@ def entity_custom(doc):
 
     for token in doc:
         # print(f"token_ {token}")
-        if not is_from_first_2_tokens(token.i) and is_place_token(token):
+        if is_place_token(token):
             add_span(token.i - 1, token.i + 1, "LOC")
         if is_phone_token(token):
             add_span(token.i - 1, token.i + 1, "NUM_TELÉFONO")
@@ -361,9 +355,9 @@ def entity_custom(doc):
     # print(f"\ndoc.ents: {doc.ents}")
     for i, ent in enumerate(doc.ents):
         # print(f"text: {ent.text} - label: {ent.label_}")
-        if not is_from_first_tokens(ent.start) and is_address(ent):
+        if is_address(ent):
             new_ents.append(generate_address_span(ent, new_ents, doc))
-        if not is_from_first_2_tokens(ent.start) and is_doctor(ent):
+        if is_doctor(ent):
             new_ents.append(generate_drx_span(ent, new_ents, doc))
 
     if new_ents:
