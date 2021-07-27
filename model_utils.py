@@ -130,7 +130,7 @@ def get_entities_in_uppercase_text(doc, text, ents):
 
 
 def anonymize_text(nlp, text, color_entities):
-    doc = nlp.generate_doc(text)
+    doc = nlp.generate_doc(sanitize_text(text))
     anonymized_text = replace_tokens_with_labels(doc, color_entities)
     return anonymized_text
 
@@ -169,3 +169,16 @@ def get_comparison_result(nlp, doc_text, annotations):
             }
         )
     return results
+
+
+def sanitize_text(text):
+    # cleaning the text to remove extra whitespace
+    clean_text = " ".join(text.split())
+
+    # remove marker tickers
+    clean_text = re.sub('"', "", clean_text)
+
+    # remove html tags
+    clean_text = re.sub(r"<.*?>", " ", clean_text)
+
+    return clean_text
