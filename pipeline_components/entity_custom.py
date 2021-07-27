@@ -90,9 +90,30 @@ def remove_wrong_labeled_entity_span(ent_list, ent_to_remove):
     return [ent for ent in ent_list if not (ent_to_remove.start == ent.start and ent_to_remove.end == ent.end)]
 
 
-def is_token_in_x_left_pos(token, pos, nbors):
+def is_token_in_x_left_lowers(token, pos, in_list):
     try:
-        return token.nbor(-pos).lower_ in nbors
+        return token.nbor(pos).lower_ in in_list
+    except Exception:
+        return False
+
+
+def is_token_in_x_left_lemma(token, pos, in_list):
+    try:
+        return token.nbor(pos).lemma_ in in_list
+    except Exception:
+        return False
+
+
+def is_token_in_x_left_text(token, pos, in_list):
+    try:
+        return token.nbor(pos).text in in_list
+    except Exception:
+        return False
+
+
+def are_2_tokens_in_x_left_lowers(token, pos_1, pos_2, in_list):
+    try:
+        return f"{token.nbor(pos_1).lower_} {token.nbor(pos_2).lower_}" in in_list
     except Exception:
         return False
 
@@ -101,6 +122,7 @@ def is_between_tokens(token_id, left=0, right=0):
     return token_id < right and token_id >= left
 
 
+# TODO necesitamos estas funciones?
 is_from_first_tokens = partial(is_between_tokens, left=0, right=3)
 is_from_first_2_tokens = partial(is_between_tokens, left=0, right=2)
 is_from_first_token = partial(is_between_tokens, left=0, right=1)
@@ -111,17 +133,19 @@ def get_aditional_left_tokens_for_address(ent):
         return 1
     if ent.label_ in ["LOC"]:
         token = ent[0]
-        if token.nbor(-1).lower_ in address_first_left_nbors:
+        if is_token_in_x_left_lowers(token, -1, address_first_left_nbors):
             return 1
-        if token.nbor(-2).lower_ in address_first_left_nbors or token.nbor(-2).lower_ in address_second_left_nbors:
+        if is_token_in_x_left_lowers(token, -2, address_first_left_nbors) or is_token_in_x_left_lowers(
+            token, -2, address_second_left_nbors
+        ):
             return 2
-        if token.nbor(-3).lower_ in address_first_left_nbors:
+        if is_token_in_x_left_lowers(token, -3, address_first_left_nbors):
             return 3
-        if token.nbor(-3).lower_ in address_second_left_nbors:
+        if is_token_in_x_left_lowers(token, -3, address_second_left_nbors):
             return 2 - 1 if token.nbor(-2).lower_ == address_connector else 0
-        if token.nbor(-4).lower_ in address_first_left_nbors:
+        if is_token_in_x_left_lowers(token, -4, address_first_left_nbors):
             return 4
-        if token.nbor(-4).lower_ in address_second_left_nbors:
+        if is_token_in_x_left_lowers(token, -4, address_second_left_nbors):
             return 3 - 1 if token.nbor(-3).lower_ == address_connector else 0
     return 0
 
@@ -135,44 +159,32 @@ def get_aditional_right_tokens_for_address(ent):
     return 0
 
 
-def get_aditional_left_tokens_for_drx(ent):
-    if ent.label_ in ["PER"]:
-        token = ent[0]
-        if token.nbor(-1).lower_ in drx_nbor:
-            return 1
-        if token.nbor(-2).lower_ in drx_nbor:
-            return 2
-        if token.nbor(-3).lower_ in drx_nbor:
-            return 3
-        if token.nbor(-4).lower_ in drx_nbor:
-            return 4
-    return 0
-
-
 def get_aditional_left_tokens_for_address_token(token):
-    if token.nbor(-1).lower_ in address_first_left_nbors:
+    if is_token_in_x_left_lowers(token, -1, address_first_left_nbors):
         return 1
-    if token.nbor(-2).lower_ in address_first_left_nbors or token.nbor(-2).lower_ in address_second_left_nbors:
+    if is_token_in_x_left_lowers(token, -2, address_first_left_nbors) or is_token_in_x_left_lowers(
+        token, -2, address_second_left_nbors
+    ):
         return 2
-    if token.nbor(-3).lower_ in address_first_left_nbors:
+    if is_token_in_x_left_lowers(token, -3, address_first_left_nbors):
         return 3
-    if token.nbor(-3).lower_ in address_second_left_nbors:
+    if is_token_in_x_left_lowers(token, -3, address_second_left_nbors):
         return 2 - 1 if token.nbor(-2).lower_ == address_connector else 0
-    if token.nbor(-4).lower_ in address_first_left_nbors:
+    if is_token_in_x_left_lowers(token, -4, address_first_left_nbors):
         return 4
-    if token.nbor(-4).lower_ in address_second_left_nbors:
+    if is_token_in_x_left_lowers(token, -4, address_second_left_nbors):
         return 3 - 1 if token.nbor(-3).lower_ == address_connector else 0
     return 0
 
 
-def get_aditional_left_tokens_for_drx_token(token):
-    if token.nbor(-1).lower_ in drx_nbor:
+def get_aditional_left_tokens_for_drx(token):
+    if is_token_in_x_left_lowers(token, -1, drx_nbor):
         return 1
-    if token.nbor(-2).lower_ in drx_nbor:
+    if is_token_in_x_left_lowers(token, -2, drx_nbor):
         return 2
-    if token.nbor(-3).lower_ in drx_nbor:
+    if is_token_in_x_left_lowers(token, -3, drx_nbor):
         return 3
-    if token.nbor(-4).lower_ in drx_nbor:
+    if is_token_in_x_left_lowers(token, -4, drx_nbor):
         return 4
     return 0
 
@@ -204,7 +216,7 @@ def generate_address_span(ent, new_ents, doc):
 
 
 def generate_drx_span(ent, new_ents, doc):
-    drx_token = get_aditional_left_tokens_for_drx(ent)
+    drx_token = get_aditional_left_tokens_for_drx(ent[0])
     ent_start = ent.start - drx_token
     ent_to_remove = get_entity_to_remove_if_contained_by(ent_start, ent.end, new_ents)
     if ent_to_remove:
@@ -218,13 +230,13 @@ def generate_drx_span(ent, new_ents, doc):
 def is_address(ent):
     first_token = ent[0]
     last_token = ent[-1]
-    address_1_tokens_to_left = is_token_in_x_left_pos(first_token, 1, address_first_left_nbors)
-    address_2_tokens_to_left_first_nbors = is_token_in_x_left_pos(first_token, 2, address_first_left_nbors)
-    address_2_tokens_to_left_second_nbors = is_token_in_x_left_pos(first_token, 2, address_second_left_nbors)
-    address_3_tokens_to_left_first_nbors = is_token_in_x_left_pos(first_token, 3, address_first_left_nbors)
-    address_3_tokens_to_left_second_nbors = is_token_in_x_left_pos(first_token, 3, address_second_left_nbors)
-    address_4_tokens_to_left_first_nbors = is_token_in_x_left_pos(first_token, 4, address_first_left_nbors)
-    address_4_tokens_to_left_second_nbors = is_token_in_x_left_pos(first_token, 4, address_second_left_nbors)
+    address_1_tokens_to_left = is_token_in_x_left_lowers(first_token, 1, address_first_left_nbors)
+    address_2_tokens_to_left_first_nbors = is_token_in_x_left_lowers(first_token, 2, address_first_left_nbors)
+    address_2_tokens_to_left_second_nbors = is_token_in_x_left_lowers(first_token, 2, address_second_left_nbors)
+    address_3_tokens_to_left_first_nbors = is_token_in_x_left_lowers(first_token, 3, address_first_left_nbors)
+    address_3_tokens_to_left_second_nbors = is_token_in_x_left_lowers(first_token, 3, address_second_left_nbors)
+    address_4_tokens_to_left_first_nbors = is_token_in_x_left_lowers(first_token, 4, address_first_left_nbors)
+    address_4_tokens_to_left_second_nbors = is_token_in_x_left_lowers(first_token, 4, address_second_left_nbors)
 
     is_address_from_PER = ent.label_ in ["PER"] and (
         address_1_tokens_to_left or address_2_tokens_to_left_second_nbors or last_token.like_num
@@ -245,13 +257,13 @@ def is_address(ent):
 
 def is_address_token_from_number(token):
     if token.like_num:
-        address_1_tokens_to_left = is_token_in_x_left_pos(token, 1, address_first_left_nbors)
-        address_2_tokens_to_left_first_nbors = is_token_in_x_left_pos(token, 2, address_first_left_nbors)
-        address_2_tokens_to_left_second_nbors = is_token_in_x_left_pos(token, 2, address_second_left_nbors)
-        address_3_tokens_to_left_first_nbors = is_token_in_x_left_pos(token, 3, address_first_left_nbors)
-        address_3_tokens_to_left_second_nbors = is_token_in_x_left_pos(token, 3, address_second_left_nbors)
-        address_4_tokens_to_left_first_nbors = is_token_in_x_left_pos(token, 4, address_first_left_nbors)
-        address_4_tokens_to_left_second_nbors = is_token_in_x_left_pos(token, 4, address_second_left_nbors)
+        address_1_tokens_to_left = is_token_in_x_left_lowers(token, 1, address_first_left_nbors)
+        address_2_tokens_to_left_first_nbors = is_token_in_x_left_lowers(token, 2, address_first_left_nbors)
+        address_2_tokens_to_left_second_nbors = is_token_in_x_left_lowers(token, 2, address_second_left_nbors)
+        address_3_tokens_to_left_first_nbors = is_token_in_x_left_lowers(token, 3, address_first_left_nbors)
+        address_3_tokens_to_left_second_nbors = is_token_in_x_left_lowers(token, 3, address_second_left_nbors)
+        address_4_tokens_to_left_first_nbors = is_token_in_x_left_lowers(token, 4, address_first_left_nbors)
+        address_4_tokens_to_left_second_nbors = is_token_in_x_left_lowers(token, 4, address_second_left_nbors)
 
         return (
             address_1_tokens_to_left
@@ -266,55 +278,41 @@ def is_address_token_from_number(token):
 
 def is_place_token(token):
     # Este enfoque puede generar falsos positivos, tener cuidado con las palabras que se usan
-    return (token.nbor(-1).lower_ in place_first_left_nbors and not token.is_stop) or (
-        token.nbor(-2).lower_ in address_second_left_nbors
-        or token.nbor(-2).lemma_ in place_second_left_nbors
+    return (is_token_in_x_left_lowers(token, -1, place_first_left_nbors) and not token.is_stop) or (
+        is_token_in_x_left_lowers(token, -2, address_second_left_nbors)
+        or is_token_in_x_left_lemma(token, -2, place_second_left_nbors)
         and not token.is_stop
     )
 
 
 def is_phone_token(token):
     return token.like_num and (
-        token.nbor(-1).lemma_ in phone_lemma
-        or token.nbor(-2).lemma_ in phone_lemma
-        or token.nbor(-1).text in phone_text
-        or token.nbor(-2).text in phone_text
+        is_token_in_x_left_lemma(token, -1, phone_lemma)
+        or is_token_in_x_left_lemma(token, -2, phone_lemma)
+        or is_token_in_x_left_text(token, -1, phone_text)
+        or is_token_in_x_left_text(token, -2, phone_text)
         or (token.nbor(-1).text == "(" and token.nbor(1).text == ")")
     )
-
-
-def get_left_lower_nbor_in_pos(token, pos, in_list):
-    try:
-        return token.nbor(pos).lower_ in in_list
-    except Exception:
-        return False
-
-
-def get_left_lower_2_nbor_in_pos(token, pos_1, pos_2, in_list):
-    try:
-        return f"{token.nbor(pos_1).lower_} {token.nbor(pos_2).lower_}" in in_list
-    except Exception:
-        return False
 
 
 def is_doctor(ent):
     first_token = ent[0]
     return (ent.label_ == "PER" or ent.label_ == "LOC") and (
-        first_token.nbor(-1).lower_ in drx_nbor
-        or get_left_lower_nbor_in_pos(first_token, -2, drx_nbor)
-        or get_left_lower_nbor_in_pos(first_token, -3, drx_nbor)
-        or get_left_lower_2_nbor_in_pos(first_token, -2, -1, drx_nbor_2_tokens)
-        or get_left_lower_2_nbor_in_pos(first_token, -3, -2, drx_nbor_2_tokens)
+        is_token_in_x_left_lowers(first_token, -1, drx_nbor)
+        or is_token_in_x_left_lowers(first_token, -2, drx_nbor)
+        or is_token_in_x_left_lowers(first_token, -3, drx_nbor)
+        or are_2_tokens_in_x_left_lowers(first_token, -2, -1, drx_nbor_2_tokens)
+        or are_2_tokens_in_x_left_lowers(first_token, -3, -2, drx_nbor_2_tokens)
     )
 
 
 def is_doctor_token(token):
-    second_nbor_left_is_drx = get_left_lower_nbor_in_pos(token, -2, drx_nbor)
-    second_nbors_left_is_drx = get_left_lower_2_nbor_in_pos(token, -2, -1, drx_nbor_2_tokens)
-    third_nbors_left_is_drx = get_left_lower_2_nbor_in_pos(token, -3, -2, drx_nbor_2_tokens)
+    second_nbor_left_is_drx = is_token_in_x_left_lowers(token, -2, drx_nbor)
+    second_nbors_left_is_drx = are_2_tokens_in_x_left_lowers(token, -2, -1, drx_nbor_2_tokens)
+    third_nbors_left_is_drx = are_2_tokens_in_x_left_lowers(token, -3, -2, drx_nbor_2_tokens)
 
     return token.is_title and (
-        token.nbor(-1).lower_ in drx_nbor
+        is_token_in_x_left_lowers(token, -1, drx_nbor)
         or second_nbor_left_is_drx
         or second_nbors_left_is_drx
         or third_nbors_left_is_drx
@@ -330,9 +328,9 @@ def is_matricula(token):
     return (
         token.like_num
         and (
-            token.nbor(-1).lower_ in matriculas
-            or token.nbor(-2).lower_ in matriculas
-            or token.nbor(-3).lower_ in matriculas
+            is_token_in_x_left_lowers(token, -1, matriculas)
+            or is_token_in_x_left_lowers(token, -2, matriculas)
+            or is_token_in_x_left_lowers(token, -3, matriculas)
         )
         or any_part_is_matricula
     )
@@ -349,15 +347,15 @@ def entity_custom(doc):
         # print(f"token_ {token}")
         if not is_from_first_2_tokens(token.i) and is_place_token(token):
             add_span(token.i - 1, token.i + 1, "LOC")
-        if not is_from_first_tokens(token.i) and is_phone_token(token):
+        if is_phone_token(token):
             add_span(token.i - 1, token.i + 1, "NUM_TELÉFONO")
-        if not is_from_first_token(token.i) and is_doctor_token(token):
-            left_extra_tokens = get_aditional_left_tokens_for_drx_token(token)
+        if is_doctor_token(token):
+            left_extra_tokens = get_aditional_left_tokens_for_drx(token)
             add_span(token.i - left_extra_tokens, token.i + 1, "DRX")
-        if not is_from_first_tokens(token.i) and is_address_token_from_number(token):
+        if is_address_token_from_number(token):
             left_extra_tokens = get_aditional_left_tokens_for_address_token(token)
             add_span(token.i - left_extra_tokens, token.i + 1, "DIRECCION")
-        if not is_from_first_tokens(token.i) and is_matricula(token):
+        if is_matricula(token):
             add_span(token.i - 1, token.i + 1, "MATRICULA")
 
     # print(f"\ndoc.ents: {doc.ents}")
