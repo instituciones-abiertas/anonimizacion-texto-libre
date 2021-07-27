@@ -55,10 +55,8 @@ def check_misc_and_org(doc):
     return doc
 
 
-def replace_tokens_with_labels(doc, color_entities, uppercase_ents):
+def replace_tokens_with_labels(doc, color_entities):
     anonymized_text = doc.text
-    if uppercase_ents:
-        doc.ents = doc.ents.extend(filter_spans(uppercase_ents))
     print(doc.ents)
     ents = list(format_spans(doc.ents))
     print(ents)
@@ -137,7 +135,10 @@ def anonymize_text(nlp, text, color_entities):
     doc = nlp.generate_doc(text)
     # FIXME no detecta algunas cosas en mayusculas, agregarlo a la clase NLP?
     uppercase_ents = get_entities_in_uppercase_text(doc, doc.text, doc.ents)
-    anonymized_text = replace_tokens_with_labels(doc, color_entities, uppercase_ents)
+    if uppercase_ents:
+        doc.ents = doc.ents.extend(filter_spans(uppercase_ents))
+
+    anonymized_text = replace_tokens_with_labels(doc, color_entities)
     return anonymized_text
 
 
