@@ -33,7 +33,7 @@ class Nlp:
 def get_best_match_for_misc_or_org(ent_to_find_match, all_ents):
     results = [ent for ent in all_ents if ent_to_find_match.text in ent.text]
     if len(results):
-        print(f"get_best_match_for_misc_or_org - match found for: {ent_to_find_match.text} - results: {results}")
+        # print(f"get_best_match_for_misc_or_org - match found for: {ent_to_find_match.text} - results: {results}")
         return results[0]
     return []
 
@@ -141,7 +141,6 @@ def calculate_total(ents_list):
 
 
 def get_comparison_result(nlp, doc_text, annotations):
-    # FIXME seria bueno usar anonymize_text porque considera las mayúsculas
     results = []
     doc = nlp.generate_doc(doc_text)
     ents = doc.ents
