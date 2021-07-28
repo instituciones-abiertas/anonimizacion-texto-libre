@@ -33,7 +33,7 @@ class Nlp:
 def get_best_match_for_misc_or_org(ent_to_find_match, all_ents):
     results = [ent for ent in all_ents if ent_to_find_match.text in ent.text]
     if len(results):
-        print(f"get_best_match_for_misc_or_org - match found for: {ent_to_find_match.text} - results: {results}")
+        # print(f"get_best_match_for_misc_or_org - match found for: {ent_to_find_match.text} - results: {results}")
         return results[0]
     return []
 
@@ -130,7 +130,7 @@ def get_entities_in_uppercase_text(doc, text, ents):
 
 
 def anonymize_text(nlp, text, color_entities):
-    doc = nlp.generate_doc(text)
+    doc = nlp.generate_doc(sanitize_text(text))
     anonymized_text = replace_tokens_with_labels(doc, color_entities)
     return anonymized_text
 
@@ -141,7 +141,6 @@ def calculate_total(ents_list):
 
 
 def get_comparison_result(nlp, doc_text, annotations):
-    # FIXME seria bueno usar anonymize_text porque considera las mayúsculas
     results = []
     doc = nlp.generate_doc(doc_text)
     ents = doc.ents
@@ -169,3 +168,16 @@ def get_comparison_result(nlp, doc_text, annotations):
             }
         )
     return results
+
+
+def sanitize_text(text):
+    # cleaning the text to remove extra whitespace
+    clean_text = " ".join(text.split())
+
+    # remove marker tickers
+    clean_text = re.sub('"', "", clean_text)
+
+    # remove html tags
+    clean_text = re.sub(r"<.*?>", " ", clean_text)
+
+    return clean_text
