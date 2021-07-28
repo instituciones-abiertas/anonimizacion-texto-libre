@@ -51,10 +51,20 @@ Use this function when you want to anonymize a text, for that you have two (2) o
 `python tasks.py anonymize_doc --text="this is the text to anonymize" --save_file --destination_folder="./results"`
 
 
+- If you want to anonymize text from the `third column` in the file `dataset1.csv` located in the folder `data` and DON'T save it, the results will be shown in the console but we encourage you to save it to a file in order to analyze it better:
+
+`python tasks.py anonymize_doc --origin_path="./data" --file_name="dataset1.csv" --column_to_use=2`
+
+
 
 - If you want to anonymize text from the `third column` in the file `dataset1.csv` located in the folder `data` and save it to a file in the folder `results`:
 
 `python tasks.py anonymize_doc --origin_path="./data" --file_name="dataset1.csv" --column_to_use=2 --save_file --destination_folder="./results"`
+
+- If you want to anonymize text from the `third column` in the file `dataset1.csv` located in the folder `data` and save it to a file in the folder `results`. If the file include titles you should indicate it by using the parameter `include_titles`:
+
+`python tasks.py anonymize_doc --origin_path="./data" --file_name="dataset1.csv" --column_to_use=2 --save_file --destination_folder="./results" --include_titles`
+
 
 ### Considerations
 - If there's an error on the parameters you send, you will see in the console what is wrong (an suggestions to fix it).
