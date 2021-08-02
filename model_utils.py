@@ -52,20 +52,20 @@ def check_misc_and_org(doc):
                 lents.append(new_ent)
         else:  # removes labels_to_check from doc.ents
             lents.append(old_ent)
-    lents = tuple(lents)
-    doc.ents = lents
+
+    doc.ents = filter_spans(lents + list(doc.ents))
     return doc
 
 
 @Language.component("check_uppercase_ent")
 def check_entities_in_uppercase_text(doc):
-    lents = list(doc.ents)
+    lents = []
     new_uppercase_ents = get_entities_in_uppercase_text(doc, doc.text, doc.ents)
     for uppercase_ent in new_uppercase_ents:
         new_ent = Span(doc, uppercase_ent.start, uppercase_ent.end, uppercase_ent.label_)
         lents.append(new_ent)
-    lents = tuple(lents)
-    doc.ents = lents
+
+    doc.ents = filter_spans(lents + list(doc.ents))
     return doc
 
 
