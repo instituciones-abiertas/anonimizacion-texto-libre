@@ -293,12 +293,17 @@ def is_place_token(token):
 
 
 def is_phone_token(token):
+    try:
+        has_parenthesis_around = token.nbor(-1).text == "(" and token.nbor(1).text == ")"
+    except Exception:
+        has_parenthesis_around = False
+
     return token.like_num and (
         is_token_in_x_left_lemma(token, -1, phone_lemma)
         or is_token_in_x_left_lemma(token, -2, phone_lemma)
         or is_token_in_x_left_text(token, -1, phone_text)
         or is_token_in_x_left_text(token, -2, phone_text)
-        or (token.nbor(-1).text == "(" and token.nbor(1).text == ")")
+        or has_parenthesis_around
     )
 
 
