@@ -6,7 +6,7 @@ from spacy.tokens import Span
 from spacy.language import Language
 from pipeline_components.entity_ruler import ruler_patterns
 from pipeline_components.entity_custom import entity_custom
-from pipeline_components.epof_phrase_matcher import EpofPhraseMatcher
+from pipeline_components.epof_phrase_matcher import epof_phrase_matcher
 from configuration import EXCLUDED_ENTS, ENTITIES_LIST
 import collections
 
