@@ -118,6 +118,13 @@ def are_2_tokens_in_x_left_lowers(token, pos_1, pos_2, in_list):
         return False
 
 
+def is_token_in_x_right(ent, x):
+    try:
+        return ent.nbor(x)
+    except Exception:
+        return False
+
+
 def is_between_tokens(token_id, left=0, right=0):
     return token_id < right and token_id >= left
 
@@ -146,9 +153,9 @@ def get_aditional_left_tokens_for_address(ent):
 
 def get_aditional_right_tokens_for_address(ent):
     last_ent_pos = ent[len(ent.text.split()) - 1]
-    if last_ent_pos.nbor(2).like_num:
+    if is_token_in_x_right(last_ent_pos, 2) and last_ent_pos.nbor(2).like_num:
         return 2
-    if last_ent_pos.nbor(1).like_num:
+    if is_token_in_x_right(last_ent_pos, 1) and last_ent_pos.nbor(1).like_num:
         return 1
     return 0
 
