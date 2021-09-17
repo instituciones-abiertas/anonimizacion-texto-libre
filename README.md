@@ -72,7 +72,7 @@ Use this function when you want to anonymize a text, for that you have two (2) o
 - If you anonymize text from a csv file, the file will be named like the original file but adding `_anonimizado` at the end.
 
 ## `evaluate_efficiency()`
-Use this function when you want to compare the anonymization made by the model against expected annotations. In order to achieve that, yoiu should provide a text file to be anonymized (txt) and a field with the corresponding annotations (json).
+Use this function when you want to compare the anonymization made by the model against expected annotations. In order to achieve that, yoiu should provide a text file to be anonymized (txt) and a field with the corresponding annotations (json). You can find a JSON file example for annotations in the folder `data` => `annotations_example_eval_efficiency.json`.
 
 ### Parameters
 - `origin_path`: Path to the file to be anonymized on the way to evaluate efficiency.
@@ -105,6 +105,7 @@ Based on that, if the model detects more entities that expected then the efficie
 
 ### Considerations
 - If there's an error on the parameters you send, you will see in the console what is wrong (an suggestions to fix it).
+- To see all entities that are being detected check `ENTITIES_LIST` in `configuration.py`.
 
 ## Using it!
 

@@ -1,0 +1,11 @@
+[
+  { 
+  "entity":"ENTITY_1", "start":2, "end":3
+  },
+  { 
+    "entity":"ENTITY_2", "start":5, "end":8
+  },
+  { 
+    "entity":"ENTITY_2", "start":20, "end":23
+  }
+]
