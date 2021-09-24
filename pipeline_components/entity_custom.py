@@ -130,7 +130,7 @@ def is_between_tokens(token_id, left=0, right=0):
 
 
 def get_aditional_left_tokens_for_address(ent):
-    if ent.label_ in ["PER"] and ent[-1].nbor().like_num:
+    if ent.label_ in ["PER"] and is_token_in_x_right(ent[-1], 1) and ent[-1].nbor().like_num:
         return 1
     if ent.label_ in ["LOC"]:
         token = ent[0]
