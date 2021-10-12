@@ -196,6 +196,15 @@ def get_aditional_left_tokens_for_drx(token):
     return 0
 
 
+def get_aditional_left_tokens_for_matricula_token(token):
+    # Workaround:check
+    if is_token_in_x_left_lowers(token, -1, matriculas):
+        return 1
+    if is_token_in_x_left_lowers(token, -2, matriculas):
+        return 2
+    return 0
+
+
 def get_entity_to_remove_if_contained_by(ent_start, ent_end, list_entities):
     for i, ent_from_list in enumerate(list_entities):
         if (
@@ -375,7 +384,8 @@ def entity_custom(doc):
             left_extra_tokens = get_aditional_left_tokens_for_address_token(token)
             add_span(token.i - left_extra_tokens, token.i + 1, "DIRECCION")
         if is_matricula(token):
-            add_span(token.i - 1, token.i + 1, "MATRICULA")
+            left_extra_tokens = get_aditional_left_tokens_for_matricula_token(token)
+            add_span(token.i - left_extra_tokens, token.i + 1, "MATRICULA")
 
     # print(f"\ndoc.ents: {doc.ents}")
     for i, ent in enumerate(doc.ents):
